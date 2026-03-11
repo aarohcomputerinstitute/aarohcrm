@@ -25,7 +25,7 @@ function ReceiptContent({ data, type }: ReceiptContentProps) {
         <div className="space-y-1">
           <h1 className="text-3xl font-black tracking-tighter text-primary-600 uppercase">AAROH</h1>
           <p className="text-[10px] text-gray-500 font-bold leading-tight uppercase tracking-wider">
-            Advanced Academy of Research & Higher Studies
+            Tech and AI Institute
           </p>
         </div>
         <div className="text-right space-y-1">
@@ -53,9 +53,9 @@ function ReceiptContent({ data, type }: ReceiptContentProps) {
         <div className="space-y-3">
           <h3 className="text-[9px] font-black text-primary-600 uppercase tracking-widest border-b border-primary-100 pb-1">Institute Contact</h3>
           <div className="space-y-0.5 text-[9px] text-gray-600 font-medium">
-            <p className="flex items-center gap-1.5"><MapPin className="w-2.5 h-2.5 text-primary-500" /> B-Block, Metro Plaza, Ground Floor</p>
-            <p className="flex items-center gap-1.5"><Phone className="w-2.5 h-2.5 text-primary-500" /> +91 9140-XXXXXX</p>
-            <p className="flex items-center gap-1.5"><Mail className="w-2.5 h-2.5 text-primary-500" /> aarohcomputerinstitute@gmail.com</p>
+            <p className="flex items-center gap-1.5"><MapPin className="w-2.5 h-2.5 text-primary-500" /> Niwaru Link Rd, Kalwar Rd, Govindpura, Jhotwara, Jaipur 302012</p>
+            <p className="flex items-center gap-1.5"><Phone className="w-2.5 h-2.5 text-primary-500" /> +91 9828658887</p>
+            <p className="flex items-center gap-1.5"><Mail className="w-2.5 h-2.5 text-primary-500" /> aarohonline@gmail.com</p>
           </div>
         </div>
       </div>

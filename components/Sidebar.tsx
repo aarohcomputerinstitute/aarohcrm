@@ -89,7 +89,7 @@ export default function Sidebar() {
           </div>
           <div>
             <p className="text-white text-sm font-bold leading-tight">
-              Aaroh Institute
+              Aaroh Tech & AI
             </p>
             <p className="text-primary-400 text-xs">CRM System</p>
           </div>

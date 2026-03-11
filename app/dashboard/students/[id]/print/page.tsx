@@ -59,12 +59,12 @@ export default function PrintAdmissionForm({ params }: { params: { id: string } 
             <div className="space-y-2">
               <h1 className="text-5xl font-black text-primary-600 tracking-tighter uppercase">AAROH</h1>
               <p className="text-xs font-black text-gray-900 uppercase tracking-[0.2em]">
-                Advanced Academy of Research & Higher Studies
+                Tech and AI Institute
               </p>
               <div className="pt-4 space-y-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                 <p className="flex items-center gap-2"><MapPin className="w-3 h-3 text-primary-500" /> B-Block, Metro Plaza, Ground Floor</p>
-                 <p className="flex items-center gap-2"><Phone className="w-3 h-3 text-primary-500" /> +91 9140-XXXXXX / +91 9999-XXXXXX</p>
-                 <p className="flex items-center gap-2"><Globe className="w-3 h-3 text-primary-500" /> www.aaroh.edu.in</p>
+                 <p className="flex items-center gap-2"><MapPin className="w-3 h-3 text-primary-500" /> Niwaru Link Rd, Kalwar Rd, Govindpura, Jhotwara, Jaipur 302012</p>
+                 <p className="flex items-center gap-2"><Phone className="w-3 h-3 text-primary-500" /> +91 9828658887</p>
+                 <p className="flex items-center gap-2"><Globe className="w-3 h-3 text-primary-500" /> www.aarohcomputerclasses.in</p>
               </div>
             </div>
             {/* Student Photo Section */}
