@@ -1,0 +1,203 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// SQLite does not support enums, so we use String and document the values here.
+// Role: ADMIN, COUNSELOR, ACCOUNTANT, TRAINER
+// InquiryStatus: NEW, FOLLOWUP, CONVERTED, NOT_INTERESTED
+// InquirySource: GOOGLE, WEBSITE, WALK_IN, REFERRAL, SOCIAL_MEDIA, OTHER
+// Gender: MALE, FEMALE, OTHER
+// CourseLevel: BASIC, MODERATE, ADVANCE
+// BatchPreference: MORNING, AFTERNOON, EVENING
+// BatchStatus: UPCOMING, ACTIVE, COMPLETED
+// PaymentMode: CASH, UPI, BANK_TRANSFER, CHEQUE
+// AttendanceStatus: PRESENT, ABSENT, LEAVE
+
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("COUNSELOR")
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inquiries Inquiry[]
+
+  @@map("users")
+}
+
+model Inquiry {
+  id           String        @id @default(cuid())
+  name         String
+  mobile       String
+  email        String?
+  courseId     String?
+  source       String  @default("WALK_IN")
+  status       String  @default("NEW")
+  followupDate DateTime?
+  notes        String?
+  counselorId  String?
+  feeOffered   Float?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  course    Course? @relation(fields: [courseId], references: [id])
+  counselor User?   @relation(fields: [counselorId], references: [id])
+  student   Student?
+
+  @@map("inquiries")
+}
+
+model Student {
+  id             String          @id @default(cuid())
+  studentId      String          @unique @default(cuid())
+  firstName      String
+  lastName       String
+  fatherName     String?
+  motherName     String?
+  dob            DateTime?
+  gender         String?
+  category       String?
+  mobile         String
+  whatsapp       String?
+  email          String?
+  address        String?
+  city           String?
+  state          String?
+  pincode        String?
+  parentName     String?
+  parentOccupation String?
+  parentMobile   String?
+  aadhaarNumber  String?
+  aadhaarUrl     String?
+  photoUrl       String?
+  courseId       String?
+  batchId        String?
+  courseLevel    String?
+  batchPreference String?
+  admissionDate  DateTime        @default(now())
+  isActive       Boolean         @default(true)
+  inquiryId      String?         @unique
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  course       Course?       @relation(fields: [courseId], references: [id])
+  batch        Batch?        @relation(fields: [batchId], references: [id])
+  inquiry      Inquiry?      @relation(fields: [inquiryId], references: [id])
+  fee          Fee?
+  attendance   Attendance[]
+  certificate  Certificate?
+
+  @@map("students")
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  name        String
+  duration    String
+  fee         Float
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  batches   Batch[]
+  students  Student[]
+  inquiries Inquiry[]
+
+  @@map("courses")
+}
+
+model Batch {
+  id          String      @id @default(cuid())
+  courseId    String
+  batchName   String
+  trainer     String
+  startTime   String
+  endTime     String
+  startDate   DateTime?
+  status      String @default("ACTIVE")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  course     Course       @relation(fields: [courseId], references: [id])
+  students   Student[]
+  attendance Attendance[]
+
+  @@map("batches")
+}
+
+model Fee {
+  id          String   @id @default(cuid())
+  studentId   String   @unique
+  totalFee    Float
+  discount    Float    @default(0)
+  finalFee    Float
+  paidAmount  Float    @default(0)
+  dueAmount   Float
+  nextDueDate DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  student      Student          @relation(fields: [studentId], references: [id])
+  transactions FeeTransaction[]
+
+  @@map("fees")
+}
+
+model FeeTransaction {
+  id            String      @id @default(cuid())
+  feeId         String
+  studentId     String
+  amount        Float
+  paymentMode   String @default("CASH")
+  receiptNumber String      @unique @default(cuid())
+  paymentDate   DateTime    @default(now())
+  notes         String?
+  createdAt     DateTime    @default(now())
+
+  fee Fee @relation(fields: [feeId], references: [id])
+
+  @@map("fee_transactions")
+}
+
+model Attendance {
+  id        String           @id @default(cuid())
+  studentId String
+  batchId   String
+  date      DateTime
+  status    String @default("PRESENT")
+  createdAt DateTime         @default(now())
+
+  student Student @relation(fields: [studentId], references: [id])
+  batch   Batch   @relation(fields: [batchId], references: [id])
+
+  @@unique([studentId, batchId, date])
+  @@map("attendance")
+}
+
+model Certificate {
+  id              String   @id @default(cuid())
+  studentId       String   @unique
+  courseId        String
+  completionDate  DateTime
+  certificateNo   String   @unique @default(cuid())
+  issuedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id])
+
+  @@map("certificates")
+}
