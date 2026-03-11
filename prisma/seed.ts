@@ -4,8 +4,8 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminEmail = "admin@aaroh.com";
-  const hashedAdminPassword = await bcrypt.hash("Admin@123", 10);
+  const adminEmail = "aarohcomputerinstitute@gmail.com";
+  const hashedAdminPassword = await bcrypt.hash("Aaroh@1986#", 10);
 
   console.log("Seeding database...");
 

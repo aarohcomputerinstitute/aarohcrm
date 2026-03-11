@@ -114,10 +114,20 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <div className="flex items-center justify-end mt-2">
+              <button
+                type="button"
+                onClick={() => alert("Please contact administrator to reset your password.")}
+                className="text-xs text-primary-300 hover:text-white transition-colors"
+              >
+                Forgot password?
+              </button>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-primary-500/30"
+              className="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 mt-4 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-primary-500/30"
             >
               {loading ? (
                 <>
@@ -129,15 +139,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Demo credentials */}
-          <div className="mt-6 p-3 bg-white/5 rounded-lg border border-white/10 text-center">
-            <p className="text-xs text-primary-300">
-              Default Admin:{" "}
-              <span className="text-white font-medium">admin@aaroh.com</span>{" "}
-              / <span className="text-white font-medium">Admin@123</span>
-            </p>
-          </div>
         </div>
 
         {/* Footer */}
