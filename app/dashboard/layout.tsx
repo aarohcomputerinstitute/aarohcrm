@@ -16,10 +16,14 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex">
-      <Sidebar />
-      <div className="main-content flex-1">
-        <Header userName={session.name} userRole={session.role} />
-        <main className="content-area animate-fade-in">{children}</main>
+      <div className="no-print">
+        <Sidebar  />
+      </div>
+      <div className="main-content flex-1 print:m-0 print:p-0 print:bg-white print:w-full">
+        <div className="no-print">
+          <Header userName={session.name} userRole={session.role} />
+        </div>
+        <main className="content-area animate-fade-in print:p-0 print:m-0">{children}</main>
       </div>
     </div>
   );

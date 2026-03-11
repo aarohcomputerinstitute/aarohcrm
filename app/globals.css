@@ -196,8 +196,23 @@
 
 /* Print Styles */
 @media print {
-  .no-print {
+  .no-print, header, nav, aside, .sidebar, .main-header, button, .btn-primary, .btn-secondary {
     display: none !important;
+  }
+
+  body, html, .main-content, .content-area, .mx-auto, main {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    overflow: visible !important;
+    float: none !important;
+    position: static !important;
+  }
+
+  /* Reset layout margins for specific cases */
+  .main-content {
+     margin-left: 0 !important;
   }
 
   .print-full {
