@@ -84,6 +84,38 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Data Backup */}
+        <div className="p-8 space-y-6">
+          <div className="flex items-center gap-3 text-lg font-bold text-gray-900">
+            <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-green-600 shrink-0">
+              <Save className="w-5 h-5" />
+            </div>
+            Data Backup (Export)
+          </div>
+          
+          <div className="pl-13 space-y-4">
+            <p className="text-sm text-gray-500">Download your CRM database in Excel/CSV format for offline backup. This is an Admin-only feature.</p>
+            <div className="flex flex-wrap gap-4">
+              <a 
+                href="/api/export?type=students"
+                target="_blank"
+                className="btn-secondary bg-white shadow-sm border border-gray-200"
+              >
+                <Save className="w-4 h-4 text-green-600" />
+                Download Students Data (CSV)
+              </a>
+              <a 
+                href="/api/export?type=fees"
+                target="_blank"
+                className="btn-secondary bg-white shadow-sm border border-gray-200"
+              >
+                <Save className="w-4 h-4 text-green-600" />
+                Download Fee Data (CSV)
+              </a>
+            </div>
+          </div>
+        </div>
+
         {/* Action */}
         <div className="p-8 bg-gray-50/50 flex justify-end">
           <button className="btn-primary shadow-md shadow-primary-500/20 px-8">

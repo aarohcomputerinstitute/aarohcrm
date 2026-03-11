@@ -40,13 +40,22 @@ export default function StudentDetail({ params }: { params: { id: string } }) {
           <h1 className="text-2xl font-bold text-gray-900">Student Profile</h1>
           <p className="text-sm text-gray-500 mt-0.5">Manage details, fees, and attendance</p>
         </div>
-        <Link 
-          href={`/dashboard/students/${student.id}/print`} 
-          className="btn-secondary flex items-center gap-2 px-4 py-2 text-sm"
-        >
-          <Printer className="w-4 h-4" />
-          Print Admission Form
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link 
+            href={`/dashboard/students/${student.id}/edit`} 
+            className="bg-white border text-gray-700 hover:bg-gray-50 shadow-sm rounded-lg font-medium flex items-center gap-2 px-4 py-2 text-sm transition-colors"
+          >
+            <User className="w-4 h-4" />
+            Edit Details
+          </Link>
+          <Link 
+            href={`/dashboard/students/${student.id}/print`} 
+            className="btn-primary flex items-center gap-2 px-4 py-2 text-sm"
+          >
+            <Printer className="w-4 h-4" />
+            Print Form
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
