@@ -6,28 +6,80 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // SQLite does not support enums, so we use String and document the values here.
-// Role: ADMIN, COUNSELOR, ACCOUNTANT, TRAINER
-// InquiryStatus: NEW, FOLLOWUP, CONVERTED, NOT_INTERESTED
-// InquirySource: GOOGLE, WEBSITE, WALK_IN, REFERRAL, SOCIAL_MEDIA, OTHER
-// Gender: MALE, FEMALE, OTHER
-// CourseLevel: BASIC, MODERATE, ADVANCE
-// BatchPreference: MORNING, AFTERNOON, EVENING
-// BatchStatus: UPCOMING, ACTIVE, COMPLETED
-// PaymentMode: CASH, UPI, BANK_TRANSFER, CHEQUE
-// AttendanceStatus: PRESENT, ABSENT, LEAVE
+// But now we use PostgreSQL, so let's use real enums!
 
+enum Role {
+  ADMIN
+  COUNSELOR
+  ACCOUNTANT
+  TRAINER
+}
+
+enum InquiryStatus {
+  NEW
+  FOLLOWUP
+  CONVERTED
+  NOT_INTERESTED
+}
+
+enum InquirySource {
+  GOOGLE
+  WEBSITE
+  WALK_IN
+  REFERRAL
+  SOCIAL_MEDIA
+  OTHER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum CourseLevel {
+  BASIC
+  MODERATE
+  ADVANCE
+}
+
+enum BatchPreference {
+  MORNING
+  AFTERNOON
+  EVENING
+}
+
+enum BatchStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+}
+
+enum PaymentMode {
+  CASH
+  UPI
+  BANK_TRANSFER
+  CHEQUE
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LEAVE
+}
 
 model User {
   id        String   @id @default(cuid())
   name      String
   email     String   @unique
   password  String
-  role      String   @default("COUNSELOR")
+  role      Role     @default(COUNSELOR)
   phone     String?
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -44,8 +96,8 @@ model Inquiry {
   mobile       String
   email        String?
   courseId     String?
-  source       String  @default("WALK_IN")
-  status       String  @default("NEW")
+  source       InquirySource @default(WALK_IN)
+  status       InquiryStatus @default(NEW)
   followupDate DateTime?
   notes        String?
   counselorId  String?
@@ -68,7 +120,7 @@ model Student {
   fatherName     String?
   motherName     String?
   dob            DateTime?
-  gender         String?
+  gender         Gender?
   category       String?
   mobile         String
   whatsapp       String?
@@ -85,8 +137,8 @@ model Student {
   photoUrl       String?
   courseId       String?
   batchId        String?
-  courseLevel    String?
-  batchPreference String?
+  courseLevel    CourseLevel?
+  batchPreference BatchPreference?
   admissionDate  DateTime        @default(now())
   isActive       Boolean         @default(true)
   inquiryId      String?         @unique
@@ -128,7 +180,7 @@ model Batch {
   startTime   String
   endTime     String
   startDate   DateTime?
-  status      String @default("ACTIVE")
+  status      BatchStatus @default(ACTIVE)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -162,7 +214,7 @@ model FeeTransaction {
   feeId         String
   studentId     String
   amount        Float
-  paymentMode   String @default("CASH")
+  paymentMode   PaymentMode @default(CASH)
   receiptNumber String      @unique @default(cuid())
   paymentDate   DateTime    @default(now())
   notes         String?
@@ -178,7 +230,7 @@ model Attendance {
   studentId String
   batchId   String
   date      DateTime
-  status    String @default("PRESENT")
+  status    AttendanceStatus @default(PRESENT)
   createdAt DateTime         @default(now())
 
   student Student @relation(fields: [studentId], references: [id])
