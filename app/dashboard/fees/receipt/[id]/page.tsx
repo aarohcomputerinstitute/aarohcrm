@@ -91,32 +91,32 @@ function ReceiptContent({ data, type }: ReceiptContentProps) {
             <p className="text-[10px] font-bold text-gray-800 italic uppercase">Rupees {transaction.amount.toLocaleString('en-IN')} Only</p>
           </div>
           <div className="px-1">
-             <p className="text-[8px] font-black text-red-500 uppercase mb-1">Term & Conditions</p>
-             <ul className="text-[8px] text-gray-400 space-y-0.5 list-disc pl-3">
-                <li>Fee once paid is non-refundable.</li>
-                <li>Keep this receipt for certificate issuance.</li>
-             </ul>
+            <p className="text-[8px] font-black text-red-500 uppercase mb-1">Term & Conditions</p>
+            <ul className="text-[8px] text-gray-400 space-y-0.5 list-disc pl-3">
+              <li>Fee once paid is non-refundable.</li>
+              <li>Keep this receipt for certificate issuance.</li>
+            </ul>
           </div>
         </div>
 
         <div className="space-y-2">
-            <div className="flex justify-between text-[11px] font-medium text-gray-600 py-1 border-b border-gray-100">
-              <span>Total Course Fee</span>
-              <span className="font-bold text-gray-900">{formatCurrency(fee.finalFee)}</span>
+          <div className="flex justify-between text-[11px] font-medium text-gray-600 py-1 border-b border-gray-100">
+            <span>Total Course Fee</span>
+            <span className="font-bold text-gray-900">{formatCurrency(fee.finalFee)}</span>
+          </div>
+          <div className="flex justify-between text-[11px] font-medium text-gray-600 py-1 border-b border-gray-100">
+            <span>Amount Paid</span>
+            <span className="font-bold text-green-600">{formatCurrency(fee.paidAmount)}</span>
+          </div>
+          <div className="flex justify-between text-[13px] font-black text-gray-900 pt-1">
+            <span className="uppercase tracking-tighter">Due Balance</span>
+            <span className="text-red-600 font-mono">{formatCurrency(fee.dueAmount)}</span>
+          </div>
+          {fee.nextDueDate && (
+            <div className="mt-2 text-right">
+              <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Next Due: {formatDate(fee.nextDueDate)}</span>
             </div>
-            <div className="flex justify-between text-[11px] font-medium text-gray-600 py-1 border-b border-gray-100">
-              <span>Amount Paid</span>
-              <span className="font-bold text-green-600">{formatCurrency(fee.paidAmount)}</span>
-            </div>
-            <div className="flex justify-between text-[13px] font-black text-gray-900 pt-1">
-              <span className="uppercase tracking-tighter">Due Balance</span>
-              <span className="text-red-600 font-mono">{formatCurrency(fee.dueAmount)}</span>
-            </div>
-            {fee.nextDueDate && (
-              <div className="mt-2 text-right">
-                <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Next Due: {formatDate(fee.nextDueDate)}</span>
-              </div>
-            )}
+          )}
         </div>
       </div>
 
@@ -128,7 +128,7 @@ function ReceiptContent({ data, type }: ReceiptContentProps) {
         <div className="text-center w-32 border-t border-dotted border-gray-300 pt-1 relative">
           <p className="text-[8px] font-bold text-gray-900 uppercase">Authorized Sign</p>
           <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 border-2 border-primary-500/10 rounded-full flex items-center justify-center opacity-10 rotate-12 rotate-12">
-             <span className="text-[6px] font-black text-primary-500 text-center uppercase tracking-tighter">AAROH<br/>OFFICIAL</span>
+            <span className="text-[6px] font-black text-primary-500 text-center uppercase tracking-tighter">AAROH<br />OFFICIAL</span>
           </div>
         </div>
       </div>
@@ -167,25 +167,25 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
       <div className="max-w-3xl mx-auto">
         {/* Action Bar */}
         <div className="flex justify-between items-center mb-6 print:hidden">
-          <button 
+          <button
             onClick={() => window.history.back()}
             className="text-xs font-bold text-gray-500 hover:text-gray-800 flex items-center gap-1 uppercase tracking-wider"
           >
             &larr; Back
           </button>
-          <button 
+          <button
             onClick={() => window.print()}
             className="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg flex items-center gap-2 transition-all active:scale-95"
           >
             <Printer className="w-4 h-4" />
-            Print Receipt (A4)
+            Print Receipt
           </button>
         </div>
 
         {/* Dual Receipt Container */}
         <div className="bg-white shadow-2xl rounded-2xl overflow-hidden print:shadow-none print:border-none print:rounded-none">
           <ReceiptContent data={data} type="STUDENT COPY" />
-          
+
           {/* Sissor Line */}
           <div className="relative h-2 print:h-4 bg-gray-50 print:bg-white flex items-center justify-center">
             <div className="w-full border-t-2 border-dashed border-gray-300"></div>

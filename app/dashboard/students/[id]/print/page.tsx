@@ -33,27 +33,27 @@ export default function PrintAdmissionForm({ params }: { params: { id: string } 
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4 print:bg-white print:py-0 print:px-0">
       <div className="max-w-[210mm] mx-auto bg-white shadow-2xl overflow-hidden print:shadow-none print:max-w-none">
-        
+
         {/* Print Action Bar */}
         <div className="p-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center print:hidden">
-          <button 
+          <button
             onClick={() => window.history.back()}
             className="text-xs font-bold text-gray-500 hover:text-gray-800 uppercase tracking-widest"
           >
             &larr; Back to Profile
           </button>
-          <button 
+          <button
             onClick={() => window.print()}
             className="bg-primary-600 text-white font-bold py-2 px-6 rounded shadow flex items-center gap-2 text-sm uppercase"
           >
             <Printer className="w-4 h-4" />
-            Print Form (A4)
+            Print Form
           </button>
         </div>
 
         {/* Professional Form Layout */}
         <div className="p-[15mm] print:p-[10mm] relative">
-          
+
           {/* Header */}
           <div className="flex justify-between items-start border-b-4 border-primary-600 pb-8 mb-10">
             <div className="space-y-2">
@@ -62,33 +62,33 @@ export default function PrintAdmissionForm({ params }: { params: { id: string } 
                 Tech and AI Institute
               </p>
               <div className="pt-4 space-y-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                 <p className="flex items-center gap-2"><MapPin className="w-3 h-3 text-primary-500" /> Niwaru Link Rd, Kalwar Rd, Govindpura, Jhotwara, Jaipur 302012</p>
-                 <p className="flex items-center gap-2"><Phone className="w-3 h-3 text-primary-500" /> +91 9828658887</p>
-                 <p className="flex items-center gap-2"><Globe className="w-3 h-3 text-primary-500" /> www.aarohcomputerclasses.in</p>
+                <p className="flex items-center gap-2"><MapPin className="w-3 h-3 text-primary-500" /> Niwaru Link Rd, Kalwar Rd, Govindpura, Jhotwara, Jaipur 302012</p>
+                <p className="flex items-center gap-2"><Phone className="w-3 h-3 text-primary-500" /> +91 9828658887</p>
+                <p className="flex items-center gap-2"><Globe className="w-3 h-3 text-primary-500" /> www.aarohcomputerclasses.in</p>
               </div>
             </div>
             {/* Student Photo Section */}
             <div className="w-[35mm] h-[45mm] border-2 border-dashed border-gray-300 rounded flex items-center justify-center bg-gray-50 overflow-hidden print:border-solid print:border-gray-200">
-               {student.photoUrl ? (
-                 <img src={student.photoUrl} alt="Student" className="w-full h-full object-cover" />
-               ) : (
-                 <div className="text-center p-4">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase leading-tight">Affix <br/> Photograph <br/> Here</p>
-                 </div>
-               )}
+              {student.photoUrl ? (
+                <img src={student.photoUrl} alt="Student" className="w-full h-full object-cover" />
+              ) : (
+                <div className="text-center p-4">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase leading-tight">Affix <br /> Photograph <br /> Here</p>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="text-center mb-10">
-             <h2 className="text-2xl font-black text-gray-900 border-2 border-gray-900 inline-block px-8 py-2 uppercase tracking-[0.3em] bg-gray-50">
-                Admission Form
-             </h2>
-             <p className="text-[10px] font-bold text-gray-500 mt-2 uppercase tracking-widest">Enrollment No: <span className="text-gray-900 font-mono text-xs">{student.studentId}</span></p>
+            <h2 className="text-2xl font-black text-gray-900 border-2 border-gray-900 inline-block px-8 py-2 uppercase tracking-[0.3em] bg-gray-50">
+              Admission Form
+            </h2>
+            <p className="text-[10px] font-bold text-gray-500 mt-2 uppercase tracking-widest">Enrollment No: <span className="text-gray-900 font-mono text-xs">{student.studentId}</span></p>
           </div>
 
           {/* Form Content */}
           <div className="space-y-10">
-            
+
             {/* 1. PERSONAL DETAILS */}
             <section>
               <h3 className="text-xs font-black text-white bg-primary-600 px-4 py-1.5 uppercase tracking-[0.1em] mb-4 inline-block">1. Personal Information</h3>
@@ -110,7 +110,7 @@ export default function PrintAdmissionForm({ params }: { params: { id: string } 
                 <DetailField label="WhatsApp Number" value={student.whatsapp || "____________________"} />
                 <DetailField label="Email Address" value={student.email || "____________________"} />
                 <div className="col-span-2">
-                   <DetailField label="Permanent Address" value={student.address} />
+                  <DetailField label="Permanent Address" value={student.address} />
                 </div>
                 <DetailField label="City" value={student.city} />
                 <DetailField label="Pincode" value={student.pincode || "_______"} />
@@ -130,38 +130,38 @@ export default function PrintAdmissionForm({ params }: { params: { id: string } 
 
             {/* 4. DECLARATION */}
             <section className="pt-4">
-               <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                  <h4 className="text-[10px] font-black text-gray-900 uppercase mb-2">Declaration:</h4>
-                  <p className="text-[9px] text-gray-500 leading-relaxed text-justify">
-                    I hereby declare that all the information provided above is true and correct to the best of my knowledge. I agree to abide by the rules and regulations of the institute. I understand that the fee once paid is non-refundable and non-transferable under any circumstances.
-                  </p>
-               </div>
+              <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <h4 className="text-[10px] font-black text-gray-900 uppercase mb-2">Declaration:</h4>
+                <p className="text-[9px] text-gray-500 leading-relaxed text-justify">
+                  I hereby declare that all the information provided above is true and correct to the best of my knowledge. I agree to abide by the rules and regulations of the institute. I understand that the fee once paid is non-refundable and non-transferable under any circumstances.
+                </p>
+              </div>
             </section>
 
           </div>
 
           {/* Signature Blocks */}
           <div className="grid grid-cols-3 gap-8 mt-24">
-             <div className="space-y-12">
-                <div className="border-t border-gray-900 pt-2 text-center">
-                   <p className="text-[10px] font-black text-gray-900 uppercase">Student's Signature</p>
-                </div>
-             </div>
-             <div className="space-y-12">
-                <div className="border-t border-gray-900 pt-2 text-center">
-                   <p className="text-[10px] font-black text-gray-900 uppercase">Parent's Signature</p>
-                </div>
-             </div>
-             <div className="space-y-12">
-                <div className="border-t border-gray-900 pt-2 text-center">
-                   <p className="text-[10px] font-black text-gray-900 uppercase">Director / Principal</p>
-                </div>
-             </div>
+            <div className="space-y-12">
+              <div className="border-t border-gray-900 pt-2 text-center">
+                <p className="text-[10px] font-black text-gray-900 uppercase">Student's Signature</p>
+              </div>
+            </div>
+            <div className="space-y-12">
+              <div className="border-t border-gray-900 pt-2 text-center">
+                <p className="text-[10px] font-black text-gray-900 uppercase">Parent's Signature</p>
+              </div>
+            </div>
+            <div className="space-y-12">
+              <div className="border-t border-gray-900 pt-2 text-center">
+                <p className="text-[10px] font-black text-gray-900 uppercase">Director / Principal</p>
+              </div>
+            </div>
           </div>
 
           {/* Footer Logo/Stamp */}
           <div className="absolute bottom-10 right-10 opacity-5 pointer-events-none rotate-[-15deg]">
-             <h4 className="text-6xl font-black border-4 border-gray-900 p-4">AAROH ACADEMY</h4>
+            <h4 className="text-6xl font-black border-4 border-gray-900 p-4">AAROH ACADEMY</h4>
           </div>
 
         </div>
