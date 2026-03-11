@@ -1,27 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-// DELETE /api/users/[id] - Remove a user (deactivate or hard delete)
+function isAdminRequest(request: NextRequest): boolean {
+  const role = request.headers.get("x-user-role");
+  return role === "ADMIN";
+}
+
+// DELETE /api/users/[id] - Admin only
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!isAdminRequest(request)) {
+    return NextResponse.json({ error: "Unauthorized: Admin access required" }, { status: 403 });
+  }
+
   try {
     const { id } = params;
-
     const user = await prisma.user.findUnique({ where: { id } });
+
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Prevent deleting the main admin
     if (user.email === "aarohcomputerinstitute@gmail.com") {
       return NextResponse.json({ error: "Cannot delete the primary admin account" }, { status: 403 });
     }
 
-    // Hard delete the user
     await prisma.user.delete({ where: { id } });
-
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Users DELETE error:", error);
@@ -29,11 +35,15 @@ export async function DELETE(
   }
 }
 
-// PATCH /api/users/[id] - Toggle active status
+// PATCH /api/users/[id] - Admin only - Toggle active status
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  if (!isAdminRequest(request)) {
+    return NextResponse.json({ error: "Unauthorized: Admin access required" }, { status: 403 });
+  }
+
   try {
     const { id } = params;
     const { isActive } = await request.json();

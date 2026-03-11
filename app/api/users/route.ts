@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
+// Helper to check if the incoming request is from an ADMIN
+function isAdminRequest(request: NextRequest): boolean {
+  const role = request.headers.get("x-user-role");
+  return role === "ADMIN";
+}
+
 export async function GET(request: NextRequest) {
   try {
     const users = await prisma.user.findMany({
@@ -17,6 +23,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // ---- Admin Only ----
+  if (!isAdminRequest(request)) {
+    return NextResponse.json({ error: "Unauthorized: Admin access required" }, { status: 403 });
+  }
+
   try {
     const { name, email, password, role } = await request.json();
 

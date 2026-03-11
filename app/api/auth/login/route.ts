@@ -3,7 +3,63 @@ import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { setSession } from "@/lib/auth";
 
+// ---- Simple In-Memory Rate Limiter ----
+// Max 5 attempts per IP per 15 minutes
+const loginAttempts = new Map<string, { count: number; firstAttempt: number }>();
+const MAX_ATTEMPTS = 5;
+const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+function getRateLimitKey(request: NextRequest): string {
+  return (
+    request.headers.get("x-forwarded-for") ||
+    request.headers.get("x-real-ip") ||
+    "unknown"
+  );
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; remaining: number; retryAfterMs: number } {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip);
+
+  if (!entry || now - entry.firstAttempt > WINDOW_MS) {
+    // Fresh window
+    loginAttempts.set(ip, { count: 1, firstAttempt: now });
+    return { allowed: true, remaining: MAX_ATTEMPTS - 1, retryAfterMs: 0 };
+  }
+
+  if (entry.count >= MAX_ATTEMPTS) {
+    const retryAfterMs = WINDOW_MS - (now - entry.firstAttempt);
+    return { allowed: false, remaining: 0, retryAfterMs };
+  }
+
+  entry.count += 1;
+  return { allowed: true, remaining: MAX_ATTEMPTS - entry.count, retryAfterMs: 0 };
+}
+
+function resetRateLimit(ip: string) {
+  loginAttempts.delete(ip);
+}
+
 export async function POST(request: NextRequest) {
+  // ---- Rate Limit Check ----
+  const ip = getRateLimitKey(request);
+  const { allowed, remaining, retryAfterMs } = checkRateLimit(ip);
+
+  if (!allowed) {
+    const minutes = Math.ceil(retryAfterMs / 60000);
+    return NextResponse.json(
+      { error: `Too many login attempts. Please wait ${minutes} minute(s) and try again.` },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil(retryAfterMs / 1000)),
+          "X-RateLimit-Limit": String(MAX_ATTEMPTS),
+          "X-RateLimit-Remaining": "0",
+        },
+      }
+    );
+  }
+
   try {
     const { email, password } = await request.json();
 
@@ -15,9 +71,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find user
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
       return NextResponse.json(
@@ -44,6 +98,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Successful login — reset rate limit for this IP
+    resetRateLimit(ip);
+
     // Set session
     try {
       await setSession({
@@ -62,12 +119,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
     });
   } catch (error) {
     console.error("Login API Global Error:", error);
