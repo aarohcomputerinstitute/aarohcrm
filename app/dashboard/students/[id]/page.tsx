@@ -7,9 +7,18 @@ import { formatCurrency, formatDate, getInitials } from "@/lib/utils";
 
 export default function StudentDetail({ params }: { params: { id: string } }) {
   const [student, setStudent] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Fetch current user session to get role
+    fetch('/api/ping') // Create a small endpoint to get session if not exists, but we can also use a simple fetch to a known route or pass role via layout
+      .then(res => res.json())
+      .then(data => {
+         setUserRole(data.role || "COUNSELOR");
+      })
+      .catch(() => setUserRole("COUNSELOR"));
+
     fetch(`/api/students/${params.id}`)
       .then(res => res.json())
       .then(data => {
@@ -195,36 +204,42 @@ export default function StudentDetail({ params }: { params: { id: string } }) {
             </div>
           </div>
 
-          <div className="card">
-            <div className="card-header border-b border-gray-100 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-primary-500" /> Fee Summary
-              </h3>
-              <Link href={`/dashboard/fees/${student.id}`} className="text-xs font-semibold text-primary-600 hover:text-primary-700 bg-primary-50 px-3 py-1.5 rounded-lg">
-                Manage Fees &rarr;
-              </Link>
+          {/* Fee Summary - Only for Admin & Accountant */}
+          {(userRole === "ADMIN" || userRole === "ACCOUNTANT") && (
+            <div className="card">
+              <div className="card-header border-b border-gray-100 flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-primary-500" /> Fee Summary
+                </h3>
+                <Link href={`/dashboard/fees/${student.id}`} className="text-xs font-semibold text-primary-600 hover:text-primary-700 bg-primary-50 px-3 py-1.5 rounded-lg">
+                  Manage Fees &rarr;
+                </Link>
+              </div>
+              <div className="card-body p-6">
+                {student.fee ? (
+                  <div className="grid grid-cols-3 gap-4 text-center divide-x divide-gray-100 bg-gray-50 rounded-xl p-4 border border-gray-100">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Total Fee</p>
+                      <p className="text-lg font-bold text-gray-900 font-mono">{formatCurrency(student.fee.finalFee)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Paid Amount</p>
+                      <p className="text-lg font-bold text-green-600 font-mono">{formatCurrency(student.fee.paidAmount)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Due Amount</p>
+                      <p className="text-lg font-bold text-red-500 font-mono">{formatCurrency(student.fee.dueAmount)}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                    <p className="text-sm text-gray-500">No fee record found.</p>
+                    <Link href={`/dashboard/fees/${student.id}`} className="text-xs font-semibold text-primary-600 mt-2 inline-block">Setup Fees Setup</Link>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="card-body p-6">
-              {student.fee ? (
-                <div className="grid grid-cols-3 gap-4 text-center divide-x divide-gray-100 bg-gray-50 rounded-xl p-4 border border-gray-100">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Total Fee</p>
-                    <p className="text-lg font-bold text-gray-900">{formatCurrency(student.fee.finalFee)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Paid</p>
-                    <p className="text-lg font-bold text-green-600">{formatCurrency(student.fee.paidAmount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Due</p>
-                    <p className="text-lg font-bold text-red-600">{formatCurrency(student.fee.dueAmount)}</p>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 text-center py-4">No fee record found.</p>
-              )}
-            </div>
-          </div>
+          )}
 
           <div className="card">
             <div className="card-header border-b border-gray-100 flex justify-between items-center">

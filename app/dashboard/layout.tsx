@@ -17,7 +17,7 @@ export default async function DashboardLayout({
   return (
     <div className="flex">
       <div className="no-print">
-        <Sidebar  />
+        <Sidebar userRole={session.role} />
       </div>
       <div className="main-content flex-1 print:m-0 print:p-0 print:bg-white print:w-full">
         <div className="no-print">

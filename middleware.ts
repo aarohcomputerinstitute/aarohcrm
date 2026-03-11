@@ -58,9 +58,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // Finance page check (Admin + Accountant only)
-  // Trainers and Counselors cannot view fee reports
+  // Trainers and Counselors cannot view fee details or reports
   if (
-    pathname.startsWith("/dashboard/reports") &&
+    (pathname.startsWith("/dashboard/fees") || pathname.startsWith("/dashboard/reports")) &&
     !["ADMIN", "ACCOUNTANT"].includes(role)
   ) {
     return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));

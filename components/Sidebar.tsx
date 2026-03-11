@@ -81,8 +81,23 @@ const navItems = [
   },
 ];
 
-export default function Sidebar() {
+} from "lucide-react";
+
+export default function Sidebar({ userRole }: { userRole?: string }) {
   const pathname = usePathname();
+
+  // Filter nav items based on user role
+  const filteredNavItems = navItems.filter(item => {
+    // Only Admin can see Staff Members and Settings
+    if (["/dashboard/settings/users", "/dashboard/settings"].includes(item.href)) {
+      return userRole === "ADMIN";
+    }
+    // Only Admin and Accountant can see Fees and Reports
+    if (["/dashboard/fees", "/dashboard/reports"].includes(item.href)) {
+      return userRole === "ADMIN" || userRole === "ACCOUNTANT";
+    }
+    return true; // Everyone else can see the rest
+  });
 
   return (
     <aside className="sidebar">
@@ -104,7 +119,7 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 scrollbar-hide">
         <ul className="space-y-0.5">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const isActive =
               item.href === "/dashboard"
                 ? pathname === "/dashboard"
