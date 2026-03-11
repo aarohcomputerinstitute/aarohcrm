@@ -70,6 +70,11 @@ const navItems = [
     icon: BarChart3,
   },
   {
+    label: "Staff Members",
+    href: "/dashboard/settings/users",
+    icon: Users,
+  },
+  {
     label: "Settings",
     href: "/dashboard/settings",
     icon: Settings,
