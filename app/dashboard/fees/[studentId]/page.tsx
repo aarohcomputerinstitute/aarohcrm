@@ -173,7 +173,6 @@ export default function StudentFeeManagePage({ params }: { params: { studentId: 
                       </div>
                       <Link 
                         href={`/dashboard/fees/receipt/${tx.id}`} 
-                        target="_blank"
                         className="btn-secondary py-1.5 px-3 shadow-sm hover:shadow text-xs"
                       >
                         Print Receipt
