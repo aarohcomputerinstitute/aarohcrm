@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, User, Phone, MapPin, Mail, CreditCard, Calendar, Contact, BookOpen, GraduationCap, FileText } from "lucide-react";
+import { ArrowLeft, User, Phone, MapPin, Mail, CreditCard, Calendar, Contact, BookOpen, GraduationCap, FileText, Printer } from "lucide-react";
 import { formatCurrency, formatDate, getInitials } from "@/lib/utils";
 
 export default function StudentDetail({ params }: { params: { id: string } }) {
