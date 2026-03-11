@@ -9,7 +9,8 @@ import FileUpload from "@/components/FileUpload";
 const STEPS = [
   { id: 1, name: "Personal Details" },
   { id: 2, name: "Contact & Address" },
-  { id: 3, name: "Documents Upload" }
+  { id: 3, name: "Course & Batch" },
+  { id: 4, name: "Documents Upload" }
 ];
 
 export default function EditAdmissionPage({ params }: { params: { id: string } }) {
@@ -18,6 +19,9 @@ export default function EditAdmissionPage({ params }: { params: { id: string } }
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+
+  const [courses, setCourses] = useState<any[]>([]);
+  const [batches, setBatches] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -36,11 +40,17 @@ export default function EditAdmissionPage({ params }: { params: { id: string } }
     state: "",
     pincode: "",
     
+    courseId: "",
+    batchId: "",
+    
     photoUrl: "",
     aadhaarUrl: "",
   });
 
   useEffect(() => {
+    fetch("/api/courses").then(res => res.json()).then(data => setCourses(data || []));
+    fetch("/api/batches").then(res => res.json()).then(data => setBatches(data || []));
+
     fetch(`/api/students/${params.id}`)
       .then(res => res.json())
       .then(data => {
@@ -60,6 +70,8 @@ export default function EditAdmissionPage({ params }: { params: { id: string } }
             city: data.city || "",
             state: data.state || "",
             pincode: data.pincode || "",
+            courseId: data.courseId || "",
+            batchId: data.batchId || "",
             photoUrl: data.photoUrl || "",
             aadhaarUrl: data.aadhaarUrl || "",
           });
@@ -112,6 +124,8 @@ export default function EditAdmissionPage({ params }: { params: { id: string } }
       </div>
     );
   }
+
+  const filteredBatches = batches.filter(b => b.courseId === formData.courseId);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -216,8 +230,37 @@ export default function EditAdmissionPage({ params }: { params: { id: string } }
             </div>
           )}
 
-          {/* STEP 3: Documents Upload */}
+          {/* STEP 3: Course & Batch */}
           {currentStep === 3 && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="form-group">
+                  <label className="form-label">Course</label>
+                  <select name="courseId" value={formData.courseId} onChange={handleChange} className="form-select bg-gray-50" disabled>
+                    <option value="">-- No course selected --</option>
+                    {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">Course fee is linked to the assigned course.</p>
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Assign Batch</label>
+                  <select name="batchId" value={formData.batchId} onChange={handleChange} className="form-select border-primary-300 focus:ring-primary-500">
+                    <option value="">-- Let student choose later --</option>
+                    {filteredBatches.map(b => (
+                      <option key={b.id} value={b.id}>
+                        {b.batchName} ({b.startTime} - {b.endTime})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">You can change the assigned batch at any time.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4: Documents Upload */}
+          {currentStep === 4 && (
             <div className="space-y-8 animate-fade-in">
               <div className="bg-primary-50/50 p-6 rounded-2xl border border-primary-100 flex items-start gap-4 mb-2">
                 <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center shrink-0">
