@@ -45,12 +45,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Set session
-    await setSession({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      name: user.name,
-    });
+    try {
+      await setSession({
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+      });
+    } catch (sessionError) {
+      console.error("Session Setting Error:", sessionError);
+      return NextResponse.json(
+        { error: "Failed to create session", details: String(sessionError) },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -62,9 +70,9 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Login Error:", error);
+    console.error("Login API Global Error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error", details: String(error) },
       { status: 500 }
     );
   }
