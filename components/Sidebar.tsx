@@ -81,13 +81,15 @@ const navItems = [
   },
 ];
 
-} from "lucide-react";
-
 export default function Sidebar({ userRole }: { userRole?: string }) {
   const pathname = usePathname();
 
   // Filter nav items based on user role
   const filteredNavItems = navItems.filter(item => {
+    // Trainer can only see Dashboard and Attendance
+    if (userRole === "TRAINER") {
+      return ["/dashboard", "/dashboard/attendance"].includes(item.href);
+    }
     // Only Admin can see Staff Members and Settings
     if (["/dashboard/settings/users", "/dashboard/settings"].includes(item.href)) {
       return userRole === "ADMIN";

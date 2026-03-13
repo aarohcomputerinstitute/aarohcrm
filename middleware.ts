@@ -66,6 +66,26 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
   }
 
+  // Trainer page check (Trainer only gets access to attendance)
+  if (
+    role === "TRAINER" && 
+    pathname.startsWith("/dashboard/") && 
+    !pathname.startsWith("/dashboard/attendance")
+  ) {
+    return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
+  }
+
+  // Trainer API check (Trainer only gets access to attendance-related APIs)
+  if (
+    role === "TRAINER" &&
+    pathname.startsWith("/api/") &&
+    !pathname.startsWith("/api/attendance") &&
+    !pathname.startsWith("/api/batches") &&
+    !pathname.startsWith("/api/auth")
+  ) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
   // Inject user info in headers for server components
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-user-id", payload.userId);
