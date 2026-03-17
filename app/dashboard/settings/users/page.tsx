@@ -8,6 +8,7 @@ const ROLES = [
   { value: "COUNSELOR", label: "Counselor", color: "bg-blue-100 text-blue-700" },
   { value: "ACCOUNTANT", label: "Accountant", color: "bg-green-100 text-green-700" },
   { value: "TRAINER", label: "Trainer", color: "bg-orange-100 text-orange-700" },
+  { value: "EMITRA", label: "e-Mitra Center", color: "bg-cyan-100 text-cyan-700" },
   { value: "ADMIN", label: "Admin", color: "bg-purple-100 text-purple-700" },
 ];
 

@@ -55,6 +55,11 @@ const navItems = [
     icon: CreditCard,
   },
   {
+    label: "Commissions",
+    href: "/dashboard/commissions",
+    icon: CreditCard,
+  },
+  {
     label: "Attendance",
     href: "/dashboard/attendance",
     icon: ClipboardCheck,
@@ -79,6 +84,21 @@ const navItems = [
     href: "/dashboard/settings",
     icon: Settings,
   },
+  {
+    label: "e-Mitra Dashboard",
+    href: "/dashboard/emitra",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "Refer Admission",
+    href: "/dashboard/emitra/admissions/new",
+    icon: GraduationCap,
+  },
+  {
+    label: "My Commissions",
+    href: "/dashboard/emitra/commissions",
+    icon: CreditCard,
+  },
 ];
 
 export default function Sidebar({ userRole }: { userRole?: string }) {
@@ -94,9 +114,17 @@ export default function Sidebar({ userRole }: { userRole?: string }) {
     if (["/dashboard/settings/users", "/dashboard/settings"].includes(item.href)) {
       return userRole === "ADMIN";
     }
-    // Only Admin and Accountant can see Fees and Reports
-    if (["/dashboard/fees", "/dashboard/reports"].includes(item.href)) {
+    // Only Admin and Accountant can see Fees, Reports and Commissions
+    if (["/dashboard/fees", "/dashboard/reports", "/dashboard/commissions"].includes(item.href)) {
       return userRole === "ADMIN" || userRole === "ACCOUNTANT";
+    }
+    // e-Mitra can only see e-Mitra specific links
+    if (userRole === "EMITRA") {
+      return pathname.startsWith("/dashboard/emitra");
+    }
+    // Filter out e-Mitra links for other roles
+    if (item.href.startsWith("/dashboard/emitra")) {
+      return false;
     }
     return true; // Everyone else can see the rest
   });

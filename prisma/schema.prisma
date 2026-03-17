@@ -19,6 +19,7 @@ enum Role {
   COUNSELOR
   ACCOUNTANT
   TRAINER
+  EMITRA
 }
 
 enum InquiryStatus {
@@ -74,6 +75,12 @@ enum AttendanceStatus {
   LEAVE
 }
 
+enum CommissionStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -85,9 +92,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  inquiries Inquiry[]
-
   @@map("users")
+  inquiries   Inquiry[]
+  referrals   Student[]
+  commissions Commission[]
 }
 
 model Inquiry {
@@ -142,15 +150,18 @@ model Student {
   admissionDate  DateTime        @default(now())
   isActive       Boolean         @default(true)
   inquiryId      String?         @unique
+  referredById   String?
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
   course       Course?       @relation(fields: [courseId], references: [id])
   batch        Batch?        @relation(fields: [batchId], references: [id])
   inquiry      Inquiry?      @relation(fields: [inquiryId], references: [id])
+  referredBy   User?         @relation(fields: [referredById], references: [id])
   fee          Fee?
   attendance   Attendance[]
   certificate  Certificate?
+  commission   Commission?
 
   @@map("students")
 }
@@ -252,4 +263,21 @@ model Certificate {
   student Student @relation(fields: [studentId], references: [id])
 
   @@map("certificates")
+}
+
+model Commission {
+  id          String           @id @default(cuid())
+  studentId   String           @unique
+  userId      String           // e-Mitra user ID
+  amount      Float
+  status      CommissionStatus @default(PENDING)
+  notes       String?
+  paidAt      DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@map("commissions")
 }

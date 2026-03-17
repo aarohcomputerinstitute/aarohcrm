@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { headers } from "next/headers";
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,7 +48,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const headersList = await headers();
+    const currentUserId = headersList.get("x-user-id");
+    const currentUserRole = headersList.get("x-user-role");
+
     const body = await request.json();
+    
+    // If logged in as EMITRA, auto-set referredById
+    const referredById = currentUserRole === "EMITRA" ? currentUserId : (body.referredById || null);
+
     const student = await prisma.student.create({
       data: {
         firstName: body.firstName,
@@ -76,8 +85,33 @@ export async function POST(request: NextRequest) {
         batchPreference: body.batchPreference || null,
         admissionDate: body.admissionDate ? new Date(body.admissionDate) : new Date(),
         inquiryId: body.inquiryId || null,
+        referredById,
       },
     });
+
+    // Auto-create commission if referred by e-Mitra
+    if (referredById) {
+      const referrer = await prisma.user.findUnique({
+        where: { id: referredById },
+        select: { role: true }
+      });
+
+      if (referrer?.role === "EMITRA") {
+        // Simple commission logic: 10% of total fee or a static amount
+        // You can make this dynamic based on settings later
+        const commissionAmount = body.totalFee ? parseFloat(body.totalFee) * 0.1 : 500; 
+
+        await prisma.commission.create({
+          data: {
+            studentId: student.id,
+            userId: referredById,
+            amount: commissionAmount,
+            status: "PENDING",
+            notes: `Commission for referring ${body.firstName} ${body.lastName}`,
+          }
+        });
+      }
+    }
 
     // Auto-create fee record if course fee provided
     if (body.courseId && body.totalFee) {

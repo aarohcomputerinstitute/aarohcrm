@@ -75,6 +75,28 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard?error=unauthorized", request.url));
   }
 
+  // e-Mitra page check (e-Mitra only gets access to their dashboard and admissions)
+  if (
+    role === "EMITRA" &&
+    pathname.startsWith("/dashboard/") &&
+    !pathname.startsWith("/dashboard/emitra")
+  ) {
+    return NextResponse.redirect(new URL("/dashboard/emitra?error=unauthorized", request.url));
+  }
+
+  // e-Mitra API check (e-Mitra only gets access to their specific APIs and student creation)
+  if (
+    role === "EMITRA" &&
+    pathname.startsWith("/api/") &&
+    !pathname.startsWith("/api/emitra") &&
+    !pathname.startsWith("/api/students") &&
+    !pathname.startsWith("/api/courses") &&
+    !pathname.startsWith("/api/batches") &&
+    !pathname.startsWith("/api/auth")
+  ) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
   // Trainer API check (Trainer only gets access to attendance-related APIs)
   if (
     role === "TRAINER" &&
