@@ -90,9 +90,9 @@ const navItems = [
     icon: LayoutDashboard,
   },
   {
-    label: "Refer Admission",
+    label: "Submit Lead",
     href: "/dashboard/emitra/admissions/new",
-    icon: GraduationCap,
+    icon: UserPlus,
   },
   {
     label: "My Commissions",
@@ -120,7 +120,7 @@ export default function Sidebar({ userRole }: { userRole?: string }) {
     }
     // e-Mitra can only see e-Mitra specific links
     if (userRole === "EMITRA") {
-      return pathname.startsWith("/dashboard/emitra");
+      return item.href.startsWith("/dashboard/emitra");
     }
     // Filter out e-Mitra links for other roles
     if (item.href.startsWith("/dashboard/emitra")) {
