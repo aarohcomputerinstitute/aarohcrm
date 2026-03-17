@@ -17,37 +17,21 @@ export default function EmitraNewAdmissionPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState<any[]>([]);
-  const [batches, setBatches] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    fatherName: "",
     gender: "MALE",
     mobile: "",
     email: "",
     address: "",
     courseId: "",
-    batchId: "",
-    totalFee: "0",
-    discount: "0",
-    photoUrl: "",
-    aadhaarUrl: "",
+    notes: "",
   });
 
   useEffect(() => {
     fetch("/api/courses").then(res => res.json()).then(data => setCourses(data || []));
-    fetch("/api/batches").then(res => res.json()).then(data => setBatches(data || []));
   }, []);
-
-  useEffect(() => {
-    if (formData.courseId) {
-      const course = courses.find(c => c.id === formData.courseId);
-      if (course) {
-        setFormData(prev => ({ ...prev, totalFee: course.fee.toString() }));
-      }
-    }
-  }, [formData.courseId, courses]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -55,23 +39,33 @@ export default function EmitraNewAdmissionPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentStep < STEPS.length) {
+    if (currentStep < 2) { // Simplified to 2 steps for Inquiry
       setCurrentStep(prev => prev + 1);
       return;
     }
 
     setLoading(true);
     try {
-      const res = await fetch("/api/students", {
+      const payload = {
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        mobile: formData.mobile,
+        email: formData.email || null,
+        courseId: formData.courseId || null,
+        notes: `e-Mitra Referral Address: ${formData.address}. ${formData.notes}`,
+        source: "OTHER", // Will be overridden as EMITRA in API based on role
+      };
+
+      const res = await fetch("/api/inquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
         router.push("/dashboard/emitra?success=true");
       } else {
-        alert("Referral failed. Please check details.");
+        const err = await res.json();
+        alert(err.error || "Referral failed. Please check details.");
       }
     } catch (error) {
       console.error(error);
@@ -81,8 +75,6 @@ export default function EmitraNewAdmissionPage() {
     }
   };
 
-  const filteredBatches = batches.filter(b => b.courseId === formData.courseId);
-
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-4 mb-4">
@@ -90,14 +82,14 @@ export default function EmitraNewAdmissionPage() {
           <ArrowLeft className="w-5 h-5 text-gray-500" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">New Student Referral</h1>
-          <p className="text-sm text-gray-500">Student ki details fill karein aur commission earn karein.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Add New Enquiry (Lead)</h1>
+          <p className="text-sm text-gray-500">Student ki basic details fill karein. Admin isse verify karke admission mein convert karega.</p>
         </div>
       </div>
 
       <div className="flex gap-2 mb-6">
-        {STEPS.map((s) => (
-          <div key={s.id} className={`flex-1 h-1.5 rounded-full ${currentStep >= s.id ? 'bg-primary-500' : 'bg-gray-200'}`}></div>
+        {[1, 2].map((id) => (
+          <div key={id} className={`flex-1 h-1.5 rounded-full ${currentStep >= id ? 'bg-primary-500' : 'bg-gray-200'}`}></div>
         ))}
       </div>
 
@@ -116,11 +108,15 @@ export default function EmitraNewAdmissionPage() {
               </div>
               <div className="form-group col-span-2">
                 <label className="form-label">Mobile Number *</label>
-                <input required type="tel" name="mobile" value={formData.mobile} onChange={handleChange} className="form-input" />
+                <input required type="tel" name="mobile" value={formData.mobile} onChange={handleChange} className="form-input" placeholder="10 digit mobile number" />
+              </div>
+              <div className="form-group col-span-2">
+                <label className="form-label">Email Address</label>
+                <input type="email" name="email" value={formData.email} onChange={handleChange} className="form-input" placeholder="Optional" />
               </div>
               <div className="form-group col-span-2">
                 <label className="form-label">Address</label>
-                <textarea name="address" value={formData.address} onChange={handleChange} rows={2} className="form-input" />
+                <textarea name="address" value={formData.address} onChange={handleChange} rows={2} className="form-input" placeholder="Student ka address" />
               </div>
             </div>
           </div>
@@ -128,45 +124,33 @@ export default function EmitraNewAdmissionPage() {
 
         {currentStep === 2 && (
           <div className="space-y-4 animate-fade-in">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">2. Course & Batch</h2>
+            <h2 className="text-lg font-bold text-gray-800 mb-4">2. Course Selection</h2>
             <div className="form-group">
-              <label className="form-label">Select Course *</label>
-              <select required name="courseId" value={formData.courseId} onChange={handleChange} className="form-select uppercase font-bold text-primary-700 bg-primary-50">
+              <label className="form-label">Select Interested Course *</label>
+              <select required name="courseId" value={formData.courseId} onChange={handleChange} className="form-select font-bold text-primary-700 bg-primary-50">
                 <option value="">-- Choose Course --</option>
-                {courses.map(c => <option key={c.id} value={c.id}>{c.name} - ₹{c.fee}</option>)}
+                {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
+            
             <div className="form-group">
-              <label className="form-label">Prefered Batch</label>
-              <select name="batchId" value={formData.batchId} onChange={handleChange} className="form-select">
-                <option value="">-- Any Batch --</option>
-                {filteredBatches.map(b => <option key={b.id} value={b.id}>{b.batchName} ({b.startTime})</option>)}
-              </select>
+              <label className="form-label">Additional Notes</label>
+              <textarea name="notes" value={formData.notes} onChange={handleChange} rows={3} className="form-input" placeholder="Student ke baare mein koi aur jaankari..." />
             </div>
-            <div className="p-4 bg-green-50 rounded-xl border border-green-100 flex justify-between items-center mt-4">
-              <span className="text-sm font-bold text-green-700">Estimated Commission</span>
-              <span className="text-xl font-black text-green-700">₹{Math.floor(parseInt(formData.totalFee || "0") * 0.1)}</span>
-            </div>
-          </div>
-        )}
 
-        {currentStep === 3 && (
-          <div className="space-y-4 animate-fade-in text-center py-4">
-             <h2 className="text-lg font-bold text-gray-800 mb-6">3. Verification Documents</h2>
-             <div className="grid grid-cols-1 gap-6 text-left">
-                <FileUpload 
-                  label="Student Photo"
-                  bucket="student-documents"
-                  folder="photos"
-                  onUploadComplete={(url) => setFormData(p => ({...p, photoUrl: url}))}
-                />
-                <FileUpload 
-                  label="ID Proof (Aadhaar Card)"
-                  bucket="student-documents"
-                  folder="ids"
-                  onUploadComplete={(url) => setFormData(p => ({...p, aadhaarUrl: url}))}
-                />
-             </div>
+            <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 mt-4">
+               <div className="flex gap-3">
+                 <div className="p-2 bg-blue-100 rounded-lg h-fit">
+                    <FileText className="w-5 h-5 text-blue-600" />
+                 </div>
+                 <div>
+                   <h4 className="text-sm font-bold text-blue-800">Inquiry Process</h4>
+                   <p className="text-xs text-blue-600 mt-1 leading-relaxed">
+                     Aapke dwara submit ki gayi inquiry Admin dashboard mein show hogi. Jaise hi student admission confirm karega, aapka commission dashboard mein update ho jayega.
+                   </p>
+                 </div>
+               </div>
+            </div>
           </div>
         )}
 
@@ -180,7 +164,7 @@ export default function EmitraNewAdmissionPage() {
             Back
           </button>
           <button type="submit" disabled={loading} className="btn-primary px-8">
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : currentStep === STEPS.length ? "Submit Referral" : "Continue"}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : currentStep === 2 ? "Submit Inquiry" : "Continue"}
           </button>
         </div>
       </form>

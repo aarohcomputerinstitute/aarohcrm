@@ -123,7 +123,12 @@ export default function InquiriesPage() {
                       {formatDate(inq.createdAt)}
                     </td>
                     <td>
-                      <p className="font-semibold text-gray-900">{inq.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-gray-900">{inq.name}</p>
+                        {inq.referrer && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase">Referred</span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
                         <Phone className="w-3 h-3" />
                         {inq.mobile}

@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const courseId = searchParams.get("courseId");
     const counselorId = searchParams.get("counselorId");
+    const referredById = searchParams.get("referredById");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
     const skip = (page - 1) * limit;
@@ -15,6 +16,7 @@ export async function GET(request: NextRequest) {
     if (status) where.status = status;
     if (courseId) where.courseId = courseId;
     if (counselorId) where.counselorId = counselorId;
+    if (referredById) where.referredById = referredById;
 
     const [inquiries, total] = await Promise.all([
       prisma.inquiry.findMany({
@@ -25,6 +27,7 @@ export async function GET(request: NextRequest) {
         include: {
           course: { select: { id: true, name: true } },
           counselor: { select: { id: true, name: true } },
+          referrer: { select: { id: true, name: true } },
         },
       }),
       prisma.inquiry.count({ where }),
@@ -40,20 +43,25 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const headersList = request.headers;
+    const userRole = headersList.get("x-user-role");
+    const userId = headersList.get("x-user-id");
+
     const inquiry = await prisma.inquiry.create({
       data: {
         name: body.name,
         mobile: body.mobile,
         email: body.email || null,
         courseId: body.courseId || null,
-        source: body.source || "WALK_IN",
+        source: userRole === "EMITRA" ? "OTHER" : (body.source || "WALK_IN"),
         status: body.status || "NEW",
         followupDate: body.followupDate ? new Date(body.followupDate) : null,
         notes: body.notes || null,
         counselorId: body.counselorId || null,
         feeOffered: body.feeOffered ? parseFloat(body.feeOffered) : null,
+        referredById: userRole === "EMITRA" ? userId : (body.referredById || null),
       },
-      include: { course: true },
+      include: { course: true, referrer: true },
     });
 
     return NextResponse.json(inquiry, { status: 201 });

@@ -54,8 +54,24 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     
-    // If logged in as EMITRA, auto-set referredById
-    const referredById = currentUserRole === "EMITRA" ? currentUserId : (body.referredById || null);
+    let referredById = body.referredById || null;
+
+    // If converting from Inquiry, fetch its referrer
+    if (body.inquiryId) {
+      const inquiry = await prisma.inquiry.findUnique({
+        where: { id: body.inquiryId },
+        select: { referredById: true }
+      });
+      if (inquiry?.referredById) {
+        referredById = inquiry.referredById;
+      }
+    }
+    
+    // If Admin/Counselor is manually adding and explicitly sets referredById, use it.
+    // However, if an e-Mitra is creating (though user says they shouldn't anymore), auto-set it.
+    if (currentUserRole === "EMITRA") {
+      referredById = currentUserId;
+    }
 
     const student = await prisma.student.create({
       data: {
@@ -89,7 +105,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Auto-create commission if referred by e-Mitra
+    // Auto-create commission ONLY if referred by e-Mitra
     if (referredById) {
       const referrer = await prisma.user.findUnique({
         where: { id: referredById },
@@ -97,8 +113,6 @@ export async function POST(request: NextRequest) {
       });
 
       if (referrer?.role === "EMITRA") {
-        // Simple commission logic: 10% of total fee or a static amount
-        // You can make this dynamic based on settings later
         const commissionAmount = body.totalFee ? parseFloat(body.totalFee) * 0.1 : 500; 
 
         await prisma.commission.create({
@@ -107,7 +121,7 @@ export async function POST(request: NextRequest) {
             userId: referredById,
             amount: commissionAmount,
             status: "PENDING",
-            notes: `Commission for referring ${body.firstName} ${body.lastName}`,
+            notes: `Commission for referral conversion: ${body.firstName} ${body.lastName}`,
           }
         });
       }

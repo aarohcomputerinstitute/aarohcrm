@@ -15,7 +15,7 @@ import { formatDate } from "@/lib/utils";
 
 export default function EmitraDashboard() {
   const [stats, setStats] = useState<any>(null);
-  const [recentAdmissions, setRecentAdmissions] = useState<any[]>([]);
+  const [recentReferrals, setRecentReferrals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function EmitraDashboard() {
         const res = await fetch("/api/emitra/dashboard");
         const data = await res.json();
         setStats(data.stats);
-        setRecentAdmissions(data.recentAdmissions);
+        setRecentReferrals(data.recentReferrals);
       } catch (error) {
         console.error("Dashboard data load failed", error);
       } finally {
@@ -38,16 +38,16 @@ export default function EmitraDashboard() {
 
   const cards = [
     {
-      label: "Total Admissions",
-      value: stats?.totalAdmissions || 0,
-      icon: GraduationCap,
+      label: "Total Refers (Inquiry)",
+      value: stats?.totalReferrals || 0,
+      icon: Users,
       color: "text-blue-600",
       bg: "bg-blue-50",
     },
     {
-      label: "Total Commission",
-      value: `₹${stats?.totalCommission || 0}`,
-      icon: Wallet,
+      label: "Converted Admissions",
+      value: stats?.totalAdmissions || 0,
+      icon: GraduationCap,
       color: "text-green-600",
       bg: "bg-green-50",
     },
@@ -71,9 +71,9 @@ export default function EmitraDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">e-Mitra Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900">e-Mitra Partner Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Welcome back! Apne referrals aur commissions yahan track karein.
+            Welcome back! Apne inquiries aur converted admissions yahan track karein.
           </p>
         </div>
       </div>
@@ -81,7 +81,7 @@ export default function EmitraDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {cards.map((card, i) => (
-          <div key={i} className="card p-6 shadow-sm border border-gray-100 flex items-center gap-4">
+          <div key={i} className="card p-6 shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
             <div className={`p-3 rounded-xl ${card.bg}`}>
               <card.icon className={`w-6 h-6 ${card.color}`} />
             </div>
@@ -94,47 +94,58 @@ export default function EmitraDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Admissions */}
-        <div className="lg:col-span-2 card shadow-sm overflow-hidden">
-          <div className="card-header border-b border-gray-100 p-4">
+        {/* Recent Referrals */}
+        <div className="lg:col-span-2 card shadow-sm overflow-hidden border border-gray-100">
+          <div className="card-header border-b border-gray-100 p-4 bg-gray-50/50">
             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-primary-500" />
-              Recent Referrals
+              Recent Inquiries (Refers)
             </h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead className="bg-gray-50 text-[10px] uppercase font-bold text-gray-500">
                 <tr>
-                  <th className="px-4 py-3">Student</th>
+                  <th className="px-4 py-3">Student Name</th>
                   <th className="px-4 py-3">Course</th>
-                  <th className="px-4 py-3">Date</th>
+                  <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Commission</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 italic">
-                {recentAdmissions.map((adm) => (
-                  <tr key={adm.id} className="hover:bg-gray-50/50 transition-colors">
+              <tbody className="divide-y divide-gray-100">
+                {recentReferrals.map((ref) => (
+                  <tr key={ref.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-4 py-3">
-                      <p className="font-semibold text-gray-900 text-sm">{adm.firstName} {adm.lastName}</p>
+                      <p className="font-semibold text-gray-900 text-sm">{ref.name}</p>
+                      <p className="text-xs text-gray-500 font-mono">{formatDate(ref.createdAt)}</p>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {adm.course?.name || "N/A"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-500 font-mono">
-                      {formatDate(adm.admissionDate)}
+                      {ref.course?.name || "N/A"}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-sm font-bold text-green-600">
-                        ₹{adm.commission?.amount || 0}
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
+                        ref.status === "CONVERTED" 
+                          ? "bg-green-100 text-green-700" 
+                          : "bg-blue-100 text-blue-700"
+                      }`}>
+                        {ref.status === "CONVERTED" ? "ADMISSION DONE" : "PENDING"}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {ref.student?.commission ? (
+                        <span className="text-sm font-bold text-green-600">
+                          ₹{ref.student.commission.amount}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">Auto-calc on conversion</span>
+                      )}
                     </td>
                   </tr>
                 ))}
-                {recentAdmissions.length === 0 && (
+                {recentReferrals.length === 0 && (
                   <tr>
                     <td colSpan={4} className="px-4 py-12 text-center text-gray-400">
-                      Koi recent admission nahi mila.
+                      Abhi tak koi referral nahi kiya gaya hai.
                     </td>
                   </tr>
                 )}
@@ -144,19 +155,19 @@ export default function EmitraDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="card p-6 shadow-sm border border-gray-100 flex flex-col justify-between">
+        <div className="card p-6 shadow-sm border border-gray-100 flex flex-col justify-between bg-gradient-to-br from-white to-gray-50">
           <div>
-            <h3 className="font-bold text-gray-900 mb-4">Quick Refer</h3>
-            <p className="text-sm text-gray-500 mb-6 font-medium">
-              Naye student ki admission direct yahan se submit karein aur commission earn karein.
+            <h3 className="font-bold text-gray-900 mb-4">Add New Inquiry</h3>
+            <p className="text-sm text-gray-500 mb-6 font-medium leading-relaxed">
+              Student ki basic details yahan se submit karein. Jab Admin ise Admission mein convert karega, tab aapka commission generate hoga.
             </p>
           </div>
           <button 
             onClick={() => window.location.href = "/dashboard/emitra/admissions/new"}
-            className="w-full btn-primary py-4 flex items-center justify-center gap-2"
+            className="w-full btn-primary py-4 shadow-lg shadow-primary-200 flex items-center justify-center gap-2 group"
           >
-            <ArrowUpRight className="w-5 h-5" />
-            New Admission
+            <Users className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            Submit New Lead
           </button>
         </div>
       </div>

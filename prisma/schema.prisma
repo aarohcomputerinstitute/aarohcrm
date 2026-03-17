@@ -93,7 +93,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@map("users")
-  inquiries   Inquiry[]
+  inquiries   Inquiry[]    @relation("counselorInquiries")
+  referredInquiries Inquiry[] @relation("emitraInquiries")
   referrals   Student[]
   commissions Commission[]
 }
@@ -110,11 +111,13 @@ model Inquiry {
   notes        String?
   counselorId  String?
   feeOffered   Float?
+  referredById String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
   course    Course? @relation(fields: [courseId], references: [id])
-  counselor User?   @relation(fields: [counselorId], references: [id])
+  counselor User?   @relation(fields: [counselorId], references: [id], name: "counselorInquiries")
+  referrer  User?   @relation(fields: [referredById], references: [id], name: "emitraInquiries")
   student   Student?
 
   @@map("inquiries")

@@ -12,6 +12,7 @@ export async function GET(
       include: {
         course: true,
         counselor: { select: { id: true, name: true } },
+        referrer: { select: { id: true, name: true, email: true } },
       },
     });
     if (!inquiry) return NextResponse.json({ error: "Not found" }, { status: 404 });

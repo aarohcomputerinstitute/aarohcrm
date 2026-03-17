@@ -207,8 +207,17 @@ export default function InquiryDetailPage({ params }: { params: { id: string } }
                   <User className="w-4 h-4 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-medium">Source</p>
-                  <p className="text-sm font-medium text-gray-900">{inquiry.source.replace("_", " ")}</p>
+                  <p className="text-xs text-gray-500 font-medium">Source / Referrer</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {inquiry.referrer ? (
+                      <span className="flex flex-col">
+                        <span className="text-primary-700 font-bold">{inquiry.referrer.name}</span>
+                        <span className="text-[10px] text-gray-400 italic">Partner (e-Mitra)</span>
+                      </span>
+                    ) : (
+                      inquiry.source.replace("_", " ")
+                    )}
+                  </p>
                 </div>
               </div>
             </div>
