@@ -16,7 +16,16 @@ export async function GET(request: NextRequest) {
     if (status) where.status = status;
     if (courseId) where.courseId = courseId;
     if (counselorId) where.counselorId = counselorId;
-    if (referredById) where.referredById = referredById;
+    
+    // Enforcement: e-Mitra can only see their own referrals
+    const userRole = request.headers.get("x-user-role");
+    const userId = request.headers.get("x-user-id");
+    
+    if (userRole === "EMITRA") {
+      where.referredById = userId;
+    } else if (referredById) {
+      where.referredById = referredById;
+    }
 
     const [inquiries, total] = await Promise.all([
       prisma.inquiry.findMany({
