@@ -26,12 +26,23 @@ export default function EmitraNewAdmissionPage() {
     email: "",
     address: "",
     courseId: "",
+    totalFee: "",
+    feeOffered: "",
     notes: "",
   });
 
   useEffect(() => {
     fetch("/api/courses").then(res => res.json()).then(data => setCourses(data || []));
   }, []);
+
+  useEffect(() => {
+    if (formData.courseId) {
+      const course = courses.find(c => c.id === formData.courseId);
+      if (course) {
+        setFormData(prev => ({ ...prev, totalFee: course.fee.toString() }));
+      }
+    }
+  }, [formData.courseId, courses]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -51,6 +62,7 @@ export default function EmitraNewAdmissionPage() {
         mobile: formData.mobile,
         email: formData.email || null,
         courseId: formData.courseId || null,
+        feeOffered: formData.feeOffered || null,
         notes: `e-Mitra Referral Address: ${formData.address}. ${formData.notes}`,
         source: "OTHER", // Will be overridden as EMITRA in API based on role
       };
@@ -131,6 +143,25 @@ export default function EmitraNewAdmissionPage() {
                 <option value="">-- Choose Course --</option>
                 {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="form-group">
+                <label className="form-label">Course Fee (Official)</label>
+                <input type="text" readOnly value={formData.totalFee ? `₹ ${formData.totalFee}` : "₹ 0"} className="form-input bg-gray-50 text-gray-500 font-mono" />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Fee Offered *</label>
+                <input 
+                  required 
+                  type="number" 
+                  name="feeOffered" 
+                  value={formData.feeOffered} 
+                  onChange={handleChange} 
+                  className="form-input font-bold text-primary-600 border-primary-200 focus:ring-primary-500" 
+                  placeholder="₹ 0.00"
+                />
+              </div>
             </div>
             
             <div className="form-group">
