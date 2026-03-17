@@ -15,7 +15,7 @@ export async function PATCH(
     }
 
     const { status } = await request.json();
-    const { id } = await params;
+    const { id } = params;
 
     const commission = await prisma.commission.update({
       where: { id },

@@ -11,7 +11,7 @@ function isAdminRequest(request: NextRequest): boolean {
 export async function GET(request: NextRequest) {
   try {
     const users = await prisma.user.findMany({
-      where: { role: { in: ["ADMIN", "COUNSELOR", "ACCOUNTANT", "TRAINER"] } },
+      where: { role: { in: ["ADMIN", "COUNSELOR", "ACCOUNTANT", "TRAINER", "EMITRA"] } },
       select: { id: true, name: true, email: true, role: true, isActive: true, createdAt: true },
       orderBy: { createdAt: "desc" },
     });
@@ -48,7 +48,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(user, { status: 201 });
   } catch (error) {
-    console.error("Users POST error:", error);
-    return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
+    console.error("Users POST error details:", error);
+    return NextResponse.json({ 
+      error: "Failed to create user", 
+      details: error instanceof Error ? error.message : String(error) 
+    }, { status: 500 });
   }
 }
