@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, UserPlus, Trash2, Shield, UserCheck, Loader2, Eye, EyeOff, X } from "lucide-react";
+import { Users, UserPlus, Trash2, Shield, UserCheck, Loader2, Eye, EyeOff, X, Edit2, Save } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 const ROLES = [
@@ -20,6 +20,7 @@ export default function UsersManagementPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -47,8 +48,8 @@ export default function UsersManagementPage() {
     setSubmitting(true);
     setError("");
 
-    const res = await fetch("/api/users", {
-      method: "POST",
+    const res = await fetch(editingUser ? `/api/users/${editingUser.id}` : "/api/users", {
+      method: editingUser ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
@@ -56,12 +57,24 @@ export default function UsersManagementPage() {
     const data = await res.json();
     if (res.ok) {
       setShowModal(false);
+      setEditingUser(null);
       setForm({ name: "", email: "", password: "", role: "COUNSELOR" });
       fetchUsers();
     } else {
-      setError(data.error || "Failed to create user");
+      setError(data.error || `Failed to ${editingUser ? "update" : "create"} user`);
     }
     setSubmitting(false);
+  };
+
+  const handleEditClick = (user: any) => {
+    setEditingUser(user);
+    setForm({
+      name: user.name,
+      email: user.email,
+      password: "", // Don't pre-fill password
+      role: user.role,
+    });
+    setShowModal(true);
   };
 
   const handleDelete = async (id: string, name: string) => {
@@ -137,6 +150,14 @@ export default function UsersManagementPage() {
                   )}
 
                   <button
+                    onClick={() => handleEditClick(user)}
+                    className="p-2 text-primary-500 hover:bg-primary-50 rounded-lg transition-colors"
+                    title="Edit Staff Details"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+
+                  <button
                     onClick={() => handleToggleAccess(user.id, user.isActive)}
                     className={`p-2 rounded-lg transition-colors ${user.isActive ? 'text-orange-500 hover:bg-orange-50' : 'text-green-600 hover:bg-green-50'}`}
                     title={user.isActive ? "Block Access" : "Restore Access"}
@@ -171,10 +192,10 @@ export default function UsersManagementPage() {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-primary-500" />
-                New Staff Account
+                {editingUser ? <Edit2 className="w-5 h-5 text-primary-500" /> : <UserPlus className="w-5 h-5 text-primary-500" />}
+                {editingUser ? "Edit Staff Account" : "New Staff Account"}
               </h2>
-              <button onClick={() => { setShowModal(false); setError(""); }} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => { setShowModal(false); setEditingUser(null); setError(""); }} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -196,15 +217,17 @@ export default function UsersManagementPage() {
                 <input required type="email" className="form-input" placeholder="email@example.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Password *</label>
-                <div className="relative">
-                  <input required type={showPassword ? "text" : "password"} className="form-input pr-10" placeholder="Strong password set karein" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+              {!editingUser && (
+                <div className="form-group">
+                  <label className="form-label">Password *</label>
+                  <div className="relative">
+                    <input required type={showPassword ? "text" : "password"} className="form-input pr-10" placeholder="Strong password set karein" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="form-group">
                 <label className="form-label">Role *</label>
@@ -217,10 +240,10 @@ export default function UsersManagementPage() {
               </div>
 
               <div className="pt-2 flex justify-end gap-3">
-                <button type="button" onClick={() => { setShowModal(false); setError(""); }} className="btn-ghost">Cancel</button>
+                <button type="button" onClick={() => { setShowModal(false); setEditingUser(null); setError(""); }} className="btn-ghost">Cancel</button>
                 <button type="submit" disabled={submitting} className="btn-primary">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-                  Create Account
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingUser ? <Save className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />)}
+                  {editingUser ? "Save Changes" : "Create Account"}
                 </button>
               </div>
             </form>

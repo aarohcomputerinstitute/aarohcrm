@@ -35,7 +35,7 @@ export async function DELETE(
   }
 }
 
-// PATCH /api/users/[id] - Admin only - Toggle active status
+// PATCH /api/users/[id] - Admin only - Update user details
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -45,12 +45,19 @@ export async function PATCH(
   }
 
   try {
-    const { id } = params;
-    const { isActive } = await request.json();
+    const { id } = await params;
+    const body = await request.json();
+    const { isActive, role, name, email } = body;
+
+    const data: any = {};
+    if (isActive !== undefined) data.isActive = isActive;
+    if (role !== undefined) data.role = role;
+    if (name !== undefined) data.name = name;
+    if (email !== undefined) data.email = email;
 
     const user = await prisma.user.update({
       where: { id },
-      data: { isActive },
+      data,
       select: { id: true, name: true, email: true, role: true, isActive: true },
     });
 
