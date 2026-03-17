@@ -55,7 +55,7 @@ export default function EmitraCommissionsPage() {
                 <th className="px-6 py-4">Date</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 italic">
+            <tbody className="divide-y divide-gray-100">
               {filtered.map((c) => (
                 <tr key={c.id} className="hover:bg-gray-50/50">
                   <td className="px-6 py-4">
@@ -67,12 +67,20 @@ export default function EmitraCommissionsPage() {
                   <td className="px-6 py-4">
                     <span className="font-mono font-bold text-primary-600 text-lg">₹{c.amount}</span>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
-                      c.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-                    }`}>
-                      {c.status}
-                    </span>
+                  <td className="px-6 py-4 text-[10px]">
+                    <div className="flex flex-col gap-1">
+                      <span className={`w-fit px-2 py-0.5 rounded-full font-bold ${
+                        c.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+                      }`}>
+                        {c.status}
+                      </span>
+                      {c.status === 'PAID' && (
+                        <div className="text-gray-500 flex flex-col pt-1">
+                           <span className="font-semibold">{c.paymentMode}</span>
+                           {c.transactionId && <span className="italic">Ref: {c.transactionId}</span>}
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-xs text-gray-500">
                     {formatDate(c.createdAt)}

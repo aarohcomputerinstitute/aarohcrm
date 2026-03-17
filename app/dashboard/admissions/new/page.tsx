@@ -67,6 +67,10 @@ export default function NewAdmissionPage() {
               mobile: data.mobile,
               email: data.email || "",
               courseId: data.courseId || "",
+              // Pre-fill discount if feeOffered exists in inquiry
+              discount: data.feeOffered && data.course?.fee 
+                ? (data.course.fee - data.feeOffered).toString() 
+                : "0"
             }));
           }
         });

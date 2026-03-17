@@ -276,6 +276,8 @@ model Commission {
   status      CommissionStatus @default(PENDING)
   notes       String?
   paidAt      DateTime?
+  paymentMode PaymentMode?
+  transactionId String?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 

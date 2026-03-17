@@ -14,13 +14,15 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const { status } = await request.json();
+    const { status, paymentMode, transactionId } = await request.json();
     const { id } = params;
 
     const commission = await prisma.commission.update({
       where: { id },
       data: { 
         status,
+        paymentMode: status === "PAID" ? paymentMode : null,
+        transactionId: status === "PAID" ? transactionId : null,
         paidAt: status === "PAID" ? new Date() : null
       },
     });
