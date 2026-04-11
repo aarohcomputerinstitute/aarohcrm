@@ -10,9 +10,11 @@ import {
   BookOpen, 
   CalendarDays,
   ArrowUpRight,
-  TrendingUp
+  TrendingUp,
+  LayoutDashboard
 } from "lucide-react";
 import { formatCurrency, statusColor } from "@/lib/utils";
+import { Skeleton, CardSkeleton, TableRowSkeleton } from "@/components/Skeleton";
 import {
   LineChart,
   Line,
@@ -62,8 +64,35 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="spinner w-8 h-8 text-primary-600" />
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-10 w-32 rounded-lg" />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => <CardSkeleton key={i} />)}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="card lg:col-span-2 shadow-sm border border-gray-100 overflow-hidden">
+            <div className="h-12 bg-gray-50 border-b border-gray-100 px-4 flex items-center">
+              <Skeleton className="h-4 w-40" />
+            </div>
+            <div className="p-8">
+               <Skeleton className="h-64 w-full rounded-xl" />
+            </div>
+          </div>
+          <div className="card shadow-sm border border-gray-100 overflow-hidden">
+             <div className="h-12 bg-gray-50 border-b border-gray-100 px-4 flex items-center">
+               <Skeleton className="h-4 w-40" />
+             </div>
+             {[1, 2, 3, 4, 5].map((i) => <TableRowSkeleton key={i} />)}
+          </div>
+        </div>
       </div>
     );
   }

@@ -14,6 +14,7 @@ import {
   LayoutDashboard
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { Skeleton, CardSkeleton, TableRowSkeleton } from "@/components/Skeleton";
 
 export default function EmitraDashboard() {
   const router = useRouter();
@@ -37,7 +38,30 @@ export default function EmitraDashboard() {
     fetchDashboardData();
   }, []);
 
-  if (loading) return <div className="p-8">Loading dashboard...</div>;
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-10 w-32 rounded-lg" />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => <CardSkeleton key={i} />)}
+        </div>
+
+        <div className="card shadow-sm border border-gray-100 overflow-hidden">
+          <div className="h-12 bg-gray-50 border-b border-gray-100 px-4 flex items-center">
+            <Skeleton className="h-4 w-40" />
+          </div>
+          {[1, 2, 3, 4, 5].map((i) => <TableRowSkeleton key={i} />)}
+        </div>
+      </div>
+    );
+  }
 
   const cards = [
     {
