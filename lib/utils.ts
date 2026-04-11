@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { randomUUID } from "crypto";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -29,18 +30,26 @@ export function formatTime(time: string): string {
   return `${h}:${String(minutes).padStart(2, "0")} ${ampm}`;
 }
 
+/**
+ * Generate collision-resistant receipt number.
+ * Format: RCP-2026-AB12CD34 (uses UUID fragment — practically zero collision risk)
+ */
 export function generateReceiptNumber(): string {
   const prefix = "RCP";
   const year = new Date().getFullYear();
-  const random = Math.floor(1000 + Math.random() * 9000);
-  return `${prefix}-${year}-${random}`;
+  const uniquePart = randomUUID().replace(/-/g, "").substring(0, 8).toUpperCase();
+  return `${prefix}-${year}-${uniquePart}`;
 }
 
+/**
+ * Generate collision-resistant certificate number.
+ * Format: AAROH/2026/AB12CD34EF
+ */
 export function generateCertificateNumber(): string {
   const prefix = "AAROH";
   const year = new Date().getFullYear();
-  const random = Math.floor(10000 + Math.random() * 90000);
-  return `${prefix}/${year}/${random}`;
+  const uniquePart = randomUUID().replace(/-/g, "").substring(0, 10).toUpperCase();
+  return `${prefix}/${year}/${uniquePart}`;
 }
 
 export function getInitials(name: string): string {
@@ -64,6 +73,9 @@ export function statusColor(status: string): string {
     PRESENT: "bg-green-100 text-green-700",
     ABSENT: "bg-red-100 text-red-700",
     LEAVE: "bg-orange-100 text-orange-700",
+    PENDING: "bg-yellow-100 text-yellow-700",
+    PAID: "bg-green-100 text-green-700",
+    CANCELLED: "bg-red-100 text-red-700",
   };
   return map[status] || "bg-gray-100 text-gray-700";
 }

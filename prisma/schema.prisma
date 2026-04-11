@@ -11,8 +11,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// SQLite does not support enums, so we use String and document the values here.
-// But now we use PostgreSQL, so let's use real enums!
+// ---- Enums ----
 
 enum Role {
   ADMIN
@@ -81,22 +80,27 @@ enum CommissionStatus {
   CANCELLED
 }
 
-model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(COUNSELOR)
-  phone     String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// ---- Models ----
 
+model User {
+  id                String       @id @default(cuid())
+  name              String
+  email             String       @unique
+  password          String
+  role              Role         @default(COUNSELOR)
+  phone             String?
+  commissionRate    Float        @default(10) // Specific commission % for EMITRA users
+  isActive          Boolean      @default(true)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  inquiries         Inquiry[]    @relation("counselorInquiries")
+  referredInquiries Inquiry[]    @relation("emitraInquiries")
+  referrals         Student[]
+  commissions       Commission[]
+
+  @@index([role])
+  @@index([isActive])
   @@map("users")
-  inquiries   Inquiry[]    @relation("counselorInquiries")
-  referredInquiries Inquiry[] @relation("emitraInquiries")
-  referrals   Student[]
-  commissions Commission[]
 }
 
 model Inquiry {
@@ -104,7 +108,7 @@ model Inquiry {
   name         String
   mobile       String
   email        String?
-  courseId     String?
+  courseId      String?
   source       InquirySource @default(WALK_IN)
   status       InquiryStatus @default(NEW)
   followupDate DateTime?
@@ -112,60 +116,73 @@ model Inquiry {
   counselorId  String?
   feeOffered   Float?
   referredById String?
+  isActive     Boolean       @default(true)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
-  course    Course? @relation(fields: [courseId], references: [id])
-  counselor User?   @relation(fields: [counselorId], references: [id], name: "counselorInquiries")
-  referrer  User?   @relation(fields: [referredById], references: [id], name: "emitraInquiries")
+  course    Course?  @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  counselor User?    @relation(fields: [counselorId], references: [id], name: "counselorInquiries", onDelete: SetNull)
+  referrer  User?    @relation(fields: [referredById], references: [id], name: "emitraInquiries", onDelete: SetNull)
   student   Student?
 
+  @@index([status])
+  @@index([mobile])
+  @@index([counselorId])
+  @@index([referredById])
+  @@index([createdAt])
   @@map("inquiries")
 }
 
 model Student {
-  id             String          @id @default(cuid())
-  studentId      String          @unique @default(cuid())
-  firstName      String
-  lastName       String
-  fatherName     String?
-  motherName     String?
-  dob            DateTime?
-  gender         Gender?
-  category       String?
-  mobile         String
-  whatsapp       String?
-  email          String?
-  address        String?
-  city           String?
-  state          String?
-  pincode        String?
-  parentName     String?
+  id               String           @id @default(cuid())
+  studentId        String           @unique @default(cuid())
+  firstName        String
+  lastName         String
+  fatherName       String?
+  motherName       String?
+  dob              DateTime?
+  gender           Gender?
+  category         String?
+  mobile           String
+  whatsapp         String?
+  email            String?
+  address          String?
+  city             String?
+  state            String?
+  pincode          String?
+  parentName       String?
   parentOccupation String?
-  parentMobile   String?
-  aadhaarNumber  String?
-  aadhaarUrl     String?
-  photoUrl       String?
-  courseId       String?
-  batchId        String?
-  courseLevel    CourseLevel?
-  batchPreference BatchPreference?
-  admissionDate  DateTime        @default(now())
-  isActive       Boolean         @default(true)
-  inquiryId      String?         @unique
-  referredById   String?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  parentMobile     String?
+  aadhaarNumber    String?
+  aadhaarUrl       String?
+  photoUrl         String?
+  courseId          String?
+  batchId          String?
+  courseLevel       CourseLevel?
+  batchPreference  BatchPreference?
+  admissionDate    DateTime         @default(now())
+  isActive         Boolean          @default(true)
+  inquiryId        String?          @unique
+  referredById     String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
-  course       Course?       @relation(fields: [courseId], references: [id])
-  batch        Batch?        @relation(fields: [batchId], references: [id])
-  inquiry      Inquiry?      @relation(fields: [inquiryId], references: [id])
-  referredBy   User?         @relation(fields: [referredById], references: [id])
-  fee          Fee?
-  attendance   Attendance[]
-  certificate  Certificate?
-  commission   Commission?
+  course      Course?      @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  batch       Batch?       @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  inquiry     Inquiry?     @relation(fields: [inquiryId], references: [id], onDelete: SetNull)
+  referredBy  User?        @relation(fields: [referredById], references: [id], onDelete: SetNull)
+  fee         Fee?
+  attendance  Attendance[]
+  certificate Certificate?
+  commission  Commission?
+  feeTransactions FeeTransaction[]
 
+  @@index([mobile])
+  @@index([courseId])
+  @@index([batchId])
+  @@index([referredById])
+  @@index([isActive])
+  @@index([admissionDate])
   @@map("students")
 }
 
@@ -179,45 +196,48 @@ model Course {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  batches   Batch[]
-  students  Student[]
-  inquiries Inquiry[]
+  batches      Batch[]
+  students     Student[]
+  inquiries    Inquiry[]
+  certificates Certificate[]
 
   @@map("courses")
 }
 
 model Batch {
-  id          String      @id @default(cuid())
-  courseId    String
-  batchName   String
-  trainer     String
-  startTime   String
-  endTime     String
-  startDate   DateTime?
-  status      BatchStatus @default(ACTIVE)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id        String      @id @default(cuid())
+  courseId   String
+  batchName String
+  trainer   String
+  startTime String
+  endTime   String
+  startDate DateTime?
+  status    BatchStatus @default(ACTIVE)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
-  course     Course       @relation(fields: [courseId], references: [id])
+  course     Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
   students   Student[]
   attendance Attendance[]
 
+  @@index([courseId])
+  @@index([status])
   @@map("batches")
 }
 
 model Fee {
-  id          String   @id @default(cuid())
-  studentId   String   @unique
+  id          String    @id @default(cuid())
+  studentId   String    @unique
   totalFee    Float
-  discount    Float    @default(0)
+  discount    Float     @default(0)
   finalFee    Float
-  paidAmount  Float    @default(0)
+  paidAmount  Float     @default(0)
   dueAmount   Float
   nextDueDate DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  student      Student          @relation(fields: [studentId], references: [id])
+  student      Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   transactions FeeTransaction[]
 
   @@map("fees")
@@ -234,8 +254,12 @@ model FeeTransaction {
   notes         String?
   createdAt     DateTime    @default(now())
 
-  fee Fee @relation(fields: [feeId], references: [id])
+  fee     Fee     @relation(fields: [feeId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
+  @@index([studentId])
+  @@index([feeId])
+  @@index([paymentDate])
   @@map("fee_transactions")
 }
 
@@ -247,42 +271,47 @@ model Attendance {
   status    AttendanceStatus @default(PRESENT)
   createdAt DateTime         @default(now())
 
-  student Student @relation(fields: [studentId], references: [id])
-  batch   Batch   @relation(fields: [batchId], references: [id])
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  batch   Batch   @relation(fields: [batchId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, batchId, date])
+  @@index([batchId, date])
   @@map("attendance")
 }
 
 model Certificate {
-  id              String   @id @default(cuid())
-  studentId       String   @unique
-  courseId        String
-  completionDate  DateTime
-  certificateNo   String   @unique @default(cuid())
-  issuedAt        DateTime @default(now())
-  createdAt       DateTime @default(now())
+  id             String   @id @default(cuid())
+  studentId      String   @unique
+  courseId       String
+  completionDate DateTime
+  certificateNo  String   @unique @default(cuid())
+  issuedAt       DateTime @default(now())
+  createdAt      DateTime @default(now())
 
-  student Student @relation(fields: [studentId], references: [id])
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@map("certificates")
 }
 
 model Commission {
-  id          String           @id @default(cuid())
-  studentId   String           @unique
-  userId      String           // e-Mitra user ID
-  amount      Float
-  status      CommissionStatus @default(PENDING)
-  notes       String?
-  paidAt      DateTime?
-  paymentMode PaymentMode?
+  id            String           @id @default(cuid())
+  studentId     String           @unique
+  userId        String // e-Mitra / pointed center user ID
+  amount        Float
+  percentage    Float            @default(10) // Commission percentage (default 10%)
+  status        CommissionStatus @default(PENDING)
+  notes         String?
+  paidAt        DateTime?
+  paymentMode   PaymentMode?
   transactionId String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
-  student Student @relation(fields: [studentId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([status])
   @@map("commissions")
 }

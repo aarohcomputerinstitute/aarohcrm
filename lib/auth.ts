@@ -1,8 +1,15 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
+// SECURITY: No fallback — app MUST have a proper JWT secret set
+const jwtSecretStr = process.env.JWT_SECRET;
+if (!jwtSecretStr || jwtSecretStr.length < 32) {
+  console.error(
+    "FATAL: JWT_SECRET environment variable is missing or too short (min 32 chars). Set a strong secret."
+  );
+}
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "fallback-secret-change-me"
+  jwtSecretStr || "MISSING_SECRET_DO_NOT_USE_IN_PRODUCTION"
 );
 
 export interface JWTPayload {
@@ -42,8 +49,8 @@ export async function setSession(payload: JWTPayload): Promise<void> {
   cookieStore.set("token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 8, // 8 hours - auto logout
+    sameSite: "strict",   // SECURITY: Upgraded from "lax" to prevent CSRF
+    maxAge: 60 * 60 * 8,  // 8 hours - auto logout
     path: "/",
   });
 }

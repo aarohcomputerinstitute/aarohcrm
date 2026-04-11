@@ -25,6 +25,7 @@ export default function Header({ userName, userRole }: HeaderProps) {
     COUNSELOR: "Counselor",
     ACCOUNTANT: "Accountant",
     TRAINER: "Trainer",
+    EMITRA: "Pointed Center",
   };
 
   const roleColor: Record<string, string> = {
@@ -32,6 +33,7 @@ export default function Header({ userName, userRole }: HeaderProps) {
     COUNSELOR: "bg-blue-100 text-blue-700",
     ACCOUNTANT: "bg-green-100 text-green-700",
     TRAINER: "bg-orange-100 text-orange-700",
+    EMITRA: "bg-cyan-100 text-cyan-700",
   };
 
   return (
@@ -81,18 +83,20 @@ export default function Header({ userName, userRole }: HeaderProps) {
               <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl border border-gray-100 shadow-lg z-20 py-1">
                 <div className="px-4 py-3 border-b border-gray-100">
                   <p className="text-sm font-semibold text-gray-900">{userName}</p>
-                  <p className="text-xs text-gray-500">{roleLabel[userRole]}</p>
+                  <p className="text-xs text-gray-500">{roleLabel[userRole] || userRole}</p>
                 </div>
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    router.push("/dashboard/settings");
-                  }}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <User className="w-4 h-4 text-gray-400" />
-                  My Profile
-                </button>
+                {userRole === "ADMIN" && (
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      router.push("/dashboard/settings");
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <User className="w-4 h-4 text-gray-400" />
+                    Settings
+                  </button>
+                )}
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"

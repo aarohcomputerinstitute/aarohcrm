@@ -31,6 +31,7 @@ export default function UsersManagementPage() {
     email: "",
     password: "",
     role: "COUNSELOR",
+    commissionRate: 10,
   });
 
   const fetchUsers = async () => {
@@ -57,8 +58,7 @@ export default function UsersManagementPage() {
     const data = await res.json();
     if (res.ok) {
       setShowModal(false);
-      setEditingUser(null);
-      setForm({ name: "", email: "", password: "", role: "COUNSELOR" });
+      setForm({ name: "", email: "", password: "", role: "COUNSELOR", commissionRate: 10 });
       fetchUsers();
     } else {
       setError(data.error || `Failed to ${editingUser ? "update" : "create"} user`);
@@ -73,6 +73,7 @@ export default function UsersManagementPage() {
       email: user.email,
       password: "", // Don't pre-fill password
       role: user.role,
+      commissionRate: user.commissionRate || 10,
     });
     setShowModal(true);
   };
@@ -140,7 +141,7 @@ export default function UsersManagementPage() {
 
                 <div className="flex items-center gap-3 ml-auto">
                   <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${getRoleStyle(user.role)}`}>
-                    {user.role}
+                    {user.role} {user.role === "EMITRA" && `(${user.commissionRate || 10}%)`}
                   </span>
                   
                   {user.isActive ? (
@@ -238,6 +239,14 @@ export default function UsersManagementPage() {
                 </select>
                 <p className="text-xs text-gray-400 mt-1">Role ke hisaab se dashboard access milega.</p>
               </div>
+
+              {form.role === "EMITRA" && (
+                <div className="form-group">
+                  <label className="form-label">Commission Percentage (%)</label>
+                  <input type="number" min="0" max="100" className="form-input" placeholder="10" value={form.commissionRate} onChange={e => setForm({ ...form, commissionRate: parseInt(e.target.value) || 0 })} />
+                  <p className="text-xs text-gray-400 mt-1">Percentage set karein for automatic commission calculation.</p>
+                </div>
+              )}
 
               <div className="pt-2 flex justify-end gap-3">
                 <button type="button" onClick={() => { setShowModal(false); setEditingUser(null); setError(""); }} className="btn-ghost">Cancel</button>

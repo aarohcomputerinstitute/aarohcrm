@@ -1,18 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
-
-// Helper to check if the incoming request is from an ADMIN
-function isAdminRequest(request: NextRequest): boolean {
-  const role = request.headers.get("x-user-role");
-  return role === "ADMIN";
-}
+import { requireAdmin, requireRole } from "@/lib/api-auth";
+import { createUserSchema, validateBody } from "@/lib/validations";
 
 export async function GET(request: NextRequest) {
+  // Only ADMIN can list all users. Counselors can see user names for dropdowns.
+  const { user, error: authError } = requireRole(request, ["ADMIN", "COUNSELOR", "ACCOUNTANT"]);
+  if (authError) return authError;
+
   try {
+    // Non-admin users only get basic info (for dropdown selectors)
+    const selectFields = user.role === "ADMIN"
+      ? { id: true, name: true, email: true, role: true, phone: true, isActive: true, commissionRate: true, createdAt: true }
+      : { id: true, name: true, role: true, isActive: true };
+
     const users = await prisma.user.findMany({
       where: { role: { in: ["ADMIN", "COUNSELOR", "ACCOUNTANT", "TRAINER", "EMITRA"] } },
-      select: { id: true, name: true, email: true, role: true, isActive: true, createdAt: true },
+      select: selectFields,
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(users);
@@ -23,35 +28,38 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  // ---- Admin Only ----
-  if (!isAdminRequest(request)) {
-    return NextResponse.json({ error: "Unauthorized: Admin access required" }, { status: 403 });
+  // Only ADMIN can create users
+  const { error: authError } = requireAdmin(request);
+  if (authError) return authError;
+
+  const { data, error: validationError } = await validateBody(request, createUserSchema);
+  if (validationError || !data) {
+    return NextResponse.json({ error: validationError || "Invalid request" }, { status: 400 });
   }
 
   try {
-    const { name, email, password, role } = await request.json();
-
-    if (!name || !email || !password || !role) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
-    }
-
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const existing = await prisma.user.findUnique({ where: { email: data.email.toLowerCase() } });
     if (existing) {
       return NextResponse.json({ error: "User with this email already exists" }, { status: 409 });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(data.password, 12);
     const user = await prisma.user.create({
-      data: { name, email, password: hashedPassword, role, isActive: true },
-      select: { id: true, name: true, email: true, role: true, isActive: true, createdAt: true },
+      data: {
+        name: data.name.trim(),
+        email: data.email.toLowerCase().trim(),
+        password: hashedPassword,
+        role: data.role,
+        phone: data.phone || null,
+        commissionRate: data.commissionRate !== undefined ? parseFloat(String(data.commissionRate)) : 10,
+        isActive: true,
+      },
+      select: { id: true, name: true, email: true, role: true, isActive: true, commissionRate: true, createdAt: true },
     });
 
     return NextResponse.json(user, { status: 201 });
   } catch (error) {
-    console.error("Users POST error details:", error);
-    return NextResponse.json({ 
-      error: "Failed to create user", 
-      details: error instanceof Error ? error.message : String(error) 
-    }, { status: 500 });
+    console.error("Users POST error:", error);
+    return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
   }
 }

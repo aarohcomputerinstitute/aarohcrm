@@ -1,7 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { requireRole } from "@/lib/api-auth";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const { error: authError } = requireRole(request, ["ADMIN", "COUNSELOR", "ACCOUNTANT"]);
+  if (authError) return authError;
+
   try {
     const [
       totalInquiries,
@@ -14,9 +18,10 @@ export async function GET() {
       recentAdmissions,
       counselorStats,
     ] = await Promise.all([
-      prisma.inquiry.count(),
+      prisma.inquiry.count({ where: { isActive: true } }),
       prisma.inquiry.count({
         where: {
+          isActive: true,
           createdAt: {
             gte: new Date(new Date().setHours(0, 0, 0, 0)),
           },
@@ -29,6 +34,7 @@ export async function GET() {
         _sum: { paidAmount: true, dueAmount: true },
       }),
       prisma.inquiry.findMany({
+        where: { isActive: true },
         take: 5,
         orderBy: { createdAt: "desc" },
         include: { 
@@ -38,6 +44,7 @@ export async function GET() {
       }),
       prisma.student.findMany({
         where: {
+          isActive: true,
           admissionDate: {
             gte: new Date(new Date().setMonth(new Date().getMonth() - 6)),
           },
@@ -59,17 +66,17 @@ export async function GET() {
       }),
     ]);
 
-    // Process monthly admissions in JS for database compatibility
-    const monthlyAdmissionsMap = (recentAdmissions as any[]).reduce((acc: any, student) => {
+    // Process monthly admissions
+    const monthlyAdmissionsMap: Record<string, number> = {};
+    for (const student of recentAdmissions) {
       const date = new Date(student.admissionDate);
       const month = date.toLocaleString('default', { month: 'short', year: '2-digit' });
-      acc[month] = (acc[month] || 0) + 1;
-      return acc;
-    }, {});
+      monthlyAdmissionsMap[month] = (monthlyAdmissionsMap[month] || 0) + 1;
+    }
 
     const monthlyAdmissions = Object.entries(monthlyAdmissionsMap).map(([month, count]) => ({
       month,
-      count: BigInt(count as number),
+      count,
     }));
 
     return NextResponse.json({
@@ -88,10 +95,7 @@ export async function GET() {
         name: c.name,
         inquiryCount: c._count.inquiries
       })),
-      monthlyAdmissions: monthlyAdmissions.map((m) => ({
-        month: m.month,
-        count: Number(m.count),
-      })),
+      monthlyAdmissions,
     });
   } catch (error) {
     console.error("Dashboard stats error:", error);

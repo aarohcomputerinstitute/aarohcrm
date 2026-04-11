@@ -1,18 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { headers } from "next/headers";
+import { requireStaffRole, requireRole } from "@/lib/api-auth";
+import { createStudentSchema, validateBody } from "@/lib/validations";
 
 export async function GET(request: NextRequest) {
+  // Any authenticated user can view students (filtered appropriately)
+  const { user, error: authError } = requireRole(request, ["ADMIN", "COUNSELOR", "ACCOUNTANT", "EMITRA"]);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get("courseId");
     const batchId = searchParams.get("batchId");
     const search = searchParams.get("search");
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20")));
     const skip = (page - 1) * limit;
 
-    const where: Record<string, unknown> = { isActive: true };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: Record<string, any> = { isActive: true };
+    
+    // e-Mitra can only see students they referred
+    if (user.role === "EMITRA") {
+      where.referredById = user.userId;
+    }
+    
     if (courseId) where.courseId = courseId;
     if (batchId) where.batchId = batchId;
     if (search) {
@@ -41,25 +53,30 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ students, total, page, limit });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
+    console.error("Students GET error:", error);
+    return NextResponse.json({ error: "Failed to fetch students" }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const headersList = await headers();
-    const currentUserId = headersList.get("x-user-id");
-    const currentUserRole = headersList.get("x-user-role");
+  // Admin, Counselor, Accountant can create admissions directly
+  // e-Mitra can create via their flow (requireRole handles it)
+  const { user, error: authError } = requireRole(request, ["ADMIN", "COUNSELOR", "ACCOUNTANT", "EMITRA"]);
+  if (authError) return authError;
 
-    const body = await request.json();
-    
-    let referredById = body.referredById || null;
+  // ---- Validate Input ----
+  const { data, error: validationError } = await validateBody(request, createStudentSchema);
+  if (validationError || !data) {
+    return NextResponse.json({ error: validationError || "Invalid request" }, { status: 400 });
+  }
+
+  try {
+    let referredById = data.referredById || null;
 
     // If converting from Inquiry, fetch its referrer
-    if (body.inquiryId) {
+    if (data.inquiryId) {
       const inquiry = await prisma.inquiry.findUnique({
-        where: { id: body.inquiryId },
+        where: { id: data.inquiryId },
         select: { referredById: true }
       });
       if (inquiry?.referredById) {
@@ -67,74 +84,81 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // If Admin/Counselor is manually adding and explicitly sets referredById, use it.
-    // However, if an e-Mitra is creating (though user says they shouldn't anymore), auto-set it.
-    if (currentUserRole === "EMITRA") {
-      referredById = currentUserId;
+    // If e-Mitra (pointed center) is creating, auto-set referrer to themselves
+    if (user.role === "EMITRA") {
+      referredById = user.userId;
     }
 
     const student = await prisma.student.create({
       data: {
-        firstName: body.firstName,
-        lastName: body.lastName,
-        fatherName: body.fatherName || null,
-        motherName: body.motherName || null,
-        dob: body.dob ? new Date(body.dob) : null,
-        gender: body.gender || null,
-        category: body.category || null,
-        mobile: body.mobile,
-        whatsapp: body.whatsapp || null,
-        email: body.email || null,
-        address: body.address || null,
-        city: body.city || null,
-        state: body.state || null,
-        pincode: body.pincode || null,
-        parentName: body.parentName || null,
-        parentOccupation: body.parentOccupation || null,
-        parentMobile: body.parentMobile || null,
-        aadhaarNumber: body.aadhaarNumber || null,
-        aadhaarUrl: body.aadhaarUrl || null,
-        photoUrl: body.photoUrl || null,
-        courseId: body.courseId || null,
-        batchId: body.batchId || null,
-        courseLevel: body.courseLevel || null,
-        batchPreference: body.batchPreference || null,
-        admissionDate: body.admissionDate ? new Date(body.admissionDate) : new Date(),
-        inquiryId: body.inquiryId || null,
+        firstName: data.firstName.trim(),
+        lastName: data.lastName.trim(),
+        fatherName: data.fatherName || null,
+        motherName: data.motherName || null,
+        dob: data.dob ? new Date(data.dob) : null,
+        gender: data.gender || null,
+        category: data.category || null,
+        mobile: data.mobile,
+        whatsapp: data.whatsapp || null,
+        email: data.email || null,
+        address: data.address || null,
+        city: data.city || null,
+        state: data.state || null,
+        pincode: data.pincode || null,
+        parentName: data.parentName || null,
+        parentOccupation: data.parentOccupation || null,
+        parentMobile: data.parentMobile || null,
+        aadhaarNumber: data.aadhaarNumber || null,
+        aadhaarUrl: data.aadhaarUrl || null,
+        photoUrl: data.photoUrl || null,
+        courseId: data.courseId || null,
+        batchId: data.batchId || null,
+        courseLevel: data.courseLevel || null,
+        batchPreference: data.batchPreference || null,
+        admissionDate: data.admissionDate ? new Date(data.admissionDate) : new Date(),
+        inquiryId: data.inquiryId || null,
         referredById,
       },
     });
 
-    // Auto-create commission ONLY if referred by e-Mitra
+    // Auto-create commission for the pointed center (e-Mitra) if referred
     if (referredById) {
       const referrer = await prisma.user.findUnique({
         where: { id: referredById },
-        select: { role: true }
+        select: { role: true, isActive: true, commissionRate: true }
       });
 
-      if (referrer?.role === "EMITRA") {
-        const commissionAmount = body.totalFee ? parseFloat(body.totalFee) * 0.1 : 500; 
+      if (referrer?.role === "EMITRA" && referrer.isActive) {
+        const totalFee = data.totalFee ? parseFloat(String(data.totalFee)) : 0;
+        const commissionPercentage = referrer.commissionRate || 10;
+        const commissionAmount = totalFee > 0
+          ? Math.round(totalFee * commissionPercentage / 100)
+          : 500; // Default ₹500 if no fee specified
 
         await prisma.commission.create({
           data: {
             studentId: student.id,
             userId: referredById,
             amount: commissionAmount,
+            percentage: commissionPercentage,
             status: "PENDING",
-            notes: `Commission for referral conversion: ${body.firstName} ${body.lastName}`,
+            notes: `Commission (${commissionPercentage}%) for referral: ${data.firstName} ${data.lastName}`,
           }
         });
       }
     }
 
     // Auto-create fee record if course fee provided
-    if (body.courseId && body.totalFee) {
-      const finalFee = parseFloat(body.totalFee) - (parseFloat(body.discount) || 0);
+    if (data.courseId && data.totalFee) {
+      const totalFeeNum = parseFloat(String(data.totalFee));
+      const discountNum = parseFloat(String(data.discount)) || 0;
+      const finalFee = Math.max(0, totalFeeNum - discountNum);
+      
       await prisma.fee.create({
         data: {
           studentId: student.id,
-          totalFee: parseFloat(body.totalFee),
-          discount: parseFloat(body.discount) || 0,
+          totalFee: totalFeeNum,
+          discount: discountNum,
           finalFee,
           paidAmount: 0,
           dueAmount: finalFee,
@@ -143,16 +167,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Mark inquiry as converted if linked
-    if (body.inquiryId) {
+    if (data.inquiryId) {
       await prisma.inquiry.update({
-        where: { id: body.inquiryId },
+        where: { id: data.inquiryId },
         data: { status: "CONVERTED" },
       });
     }
 
     return NextResponse.json(student, { status: 201 });
   } catch (error) {
-    console.error(error);
+    console.error("Student POST error:", error);
     return NextResponse.json({ error: "Failed to create student" }, { status: 500 });
   }
 }

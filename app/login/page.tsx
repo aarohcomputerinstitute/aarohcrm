@@ -143,7 +143,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-primary-400/60 text-xs mt-6">
-          © 2024 Aaroh Institute. All rights reserved.
+          © {new Date().getFullYear()} Aaroh Institute. All rights reserved.
         </p>
       </div>
     </div>

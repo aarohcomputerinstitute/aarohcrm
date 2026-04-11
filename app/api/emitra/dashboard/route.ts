@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { headers } from "next/headers";
+import { requireRole } from "@/lib/api-auth";
 
 export async function GET(request: NextRequest) {
-  try {
-    const headersList = await headers();
-    const userId = headersList.get("x-user-id");
+  // e-Mitra and ADMIN can view this dashboard
+  const { user, error: authError } = requireRole(request, ["ADMIN", "EMITRA"]);
+  if (authError) return authError;
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  try {
+    const userId = user.userId;
 
     const [stats, recentAdmissions] = await Promise.all([
       prisma.commission.aggregate({
@@ -17,12 +16,12 @@ export async function GET(request: NextRequest) {
         _sum: { amount: true },
       }),
       prisma.student.findMany({
-        where: { referredById: userId },
+        where: { referredById: userId, isActive: true },
         take: 5,
         orderBy: { admissionDate: "desc" },
         include: {
           course: { select: { name: true } },
-          commission: { select: { amount: true, status: true } },
+          commission: { select: { amount: true, status: true, percentage: true } },
         },
       }),
     ]);
@@ -38,22 +37,22 @@ export async function GET(request: NextRequest) {
     });
 
     const totalReferrals = await prisma.inquiry.count({
-      where: { referredById: userId },
+      where: { referredById: userId, isActive: true },
     });
 
     const totalAdmissions = await prisma.student.count({
-      where: { referredById: userId },
+      where: { referredById: userId, isActive: true },
     });
 
     const recentReferrals = await prisma.inquiry.findMany({
-      where: { referredById: userId },
+      where: { referredById: userId, isActive: true },
       take: 5,
       orderBy: { createdAt: "desc" },
       include: {
         course: { select: { name: true } },
         student: {
           include: {
-            commission: { select: { amount: true, status: true } }
+            commission: { select: { amount: true, status: true, percentage: true } }
           }
         }
       },
@@ -68,9 +67,10 @@ export async function GET(request: NextRequest) {
         pendingCommission: pendingCommission._sum.amount || 0,
       },
       recentReferrals,
+      recentAdmissions,
     });
   } catch (error) {
-    console.error(error);
+    console.error("e-Mitra Dashboard error:", error);
     return NextResponse.json({ error: "Failed to fetch dashboard data" }, { status: 500 });
   }
 }

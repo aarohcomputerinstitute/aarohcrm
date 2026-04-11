@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { requireAdmin } from "@/lib/api-auth";
 import { formatDate } from "@/lib/utils";
 
-function isAdminRequest(request: NextRequest): boolean {
-  const role = request.headers.get("x-user-role");
-  return role === "ADMIN";
-}
-
 // Simple CSV builder
-function jsonToCsv(items: any[], headers: string[]): string {
+function jsonToCsv(items: Record<string, unknown>[], headers: string[]): string {
   if (!items || !items.length) return headers.join(",") + "\n";
   
   const csvRows = [headers.join(",")];
@@ -33,9 +29,8 @@ function jsonToCsv(items: any[], headers: string[]): string {
 
 export async function GET(request: NextRequest) {
   // Only admins can export data
-  if (!isAdminRequest(request)) {
-    return new NextResponse("Unauthorized: Admin access required", { status: 403 });
-  }
+  const { error: authError } = requireAdmin(request);
+  if (authError) return authError;
 
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type");
@@ -56,13 +51,14 @@ export async function GET(request: NextRequest) {
         WhatsApp: s.whatsapp || "",
         Date_of_Birth: s.dob ? formatDate(s.dob) : "",
         Father_Name: s.fatherName || "",
-        City: s.city,
+        City: s.city || "",
         Course: s.course?.name || "",
         Batch: s.batch?.batchName || "",
         Admission_Date: s.admissionDate ? formatDate(s.admissionDate) : "",
+        Active: s.isActive ? "Yes" : "No",
       }));
 
-      const headers = ["Student_ID", "First_Name", "Last_Name", "Email", "Mobile", "WhatsApp", "Date_of_Birth", "Father_Name", "City", "Course", "Batch", "Admission_Date"];
+      const headers = ["Student_ID", "First_Name", "Last_Name", "Email", "Mobile", "WhatsApp", "Date_of_Birth", "Father_Name", "City", "Course", "Batch", "Admission_Date", "Active"];
       const csv = jsonToCsv(formattedData, headers);
 
       return new NextResponse(csv, {
@@ -100,7 +96,38 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return new NextResponse("Invalid export type", { status: 400 });
+    if (type === "commissions") {
+      const commissions = await prisma.commission.findMany({
+        include: {
+          student: true,
+          user: { select: { name: true, email: true } },
+        },
+        orderBy: { createdAt: "desc" }
+      });
+
+      const formattedData = commissions.map(c => ({
+        Center_Name: c.user.name,
+        Center_Email: c.user.email,
+        Student_Name: `${c.student.firstName} ${c.student.lastName}`,
+        Commission_Amount: c.amount,
+        Percentage: c.percentage,
+        Status: c.status,
+        Paid_At: c.paidAt ? formatDate(c.paidAt) : "",
+        Created_At: formatDate(c.createdAt),
+      }));
+
+      const headers = ["Center_Name", "Center_Email", "Student_Name", "Commission_Amount", "Percentage", "Status", "Paid_At", "Created_At"];
+      const csv = jsonToCsv(formattedData, headers);
+
+      return new NextResponse(csv, {
+        headers: {
+          "Content-Type": "text/csv",
+          "Content-Disposition": `attachment; filename="commissions_backup_${new Date().toISOString().split('T')[0]}.csv"`,
+        },
+      });
+    }
+
+    return new NextResponse("Invalid export type. Supported: students, fees, commissions", { status: 400 });
 
   } catch (error) {
     console.error("Export API Error:", error);

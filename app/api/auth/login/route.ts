@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { setSession } from "@/lib/auth";
+import { loginSchema, validateBody } from "@/lib/validations";
 
 // ---- Simple In-Memory Rate Limiter ----
 // Max 5 attempts per IP per 15 minutes
@@ -11,7 +12,7 @@ const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
 function getRateLimitKey(request: NextRequest): string {
   return (
-    request.headers.get("x-forwarded-for") ||
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     request.headers.get("x-real-ip") ||
     "unknown"
   );
@@ -22,7 +23,6 @@ function checkRateLimit(ip: string): { allowed: boolean; remaining: number; retr
   const entry = loginAttempts.get(ip);
 
   if (!entry || now - entry.firstAttempt > WINDOW_MS) {
-    // Fresh window
     loginAttempts.set(ip, { count: 1, firstAttempt: now });
     return { allowed: true, remaining: MAX_ATTEMPTS - 1, retryAfterMs: 0 };
   }
@@ -40,10 +40,20 @@ function resetRateLimit(ip: string) {
   loginAttempts.delete(ip);
 }
 
+// Cleanup stale entries every 30 minutes
+setInterval(() => {
+  const now = Date.now();
+  loginAttempts.forEach((value, key) => {
+    if (now - value.firstAttempt > WINDOW_MS) {
+      loginAttempts.delete(key);
+    }
+  });
+}, 30 * 60 * 1000);
+
 export async function POST(request: NextRequest) {
   // ---- Rate Limit Check ----
   const ip = getRateLimitKey(request);
-  const { allowed, remaining, retryAfterMs } = checkRateLimit(ip);
+  const { allowed, retryAfterMs } = checkRateLimit(ip);
 
   if (!allowed) {
     const minutes = Math.ceil(retryAfterMs / 60000);
@@ -60,18 +70,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  try {
-    const { email, password } = await request.json();
+  // ---- Validate Input ----
+  const { data, error: validationError } = await validateBody(request, loginSchema);
+  if (validationError || !data) {
+    return NextResponse.json({ error: validationError || "Invalid request" }, { status: 400 });
+  }
 
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: "Email and password are required" },
-        { status: 400 }
-      );
-    }
+  try {
+    const { email, password } = data;
 
     // Find user
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
 
     if (!user) {
       return NextResponse.json(
@@ -112,7 +121,7 @@ export async function POST(request: NextRequest) {
     } catch (sessionError) {
       console.error("Session Setting Error:", sessionError);
       return NextResponse.json(
-        { error: "Failed to create session", details: String(sessionError) },
+        { error: "Failed to create session" },
         { status: 500 }
       );
     }
@@ -122,14 +131,10 @@ export async function POST(request: NextRequest) {
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
     });
   } catch (error) {
-    console.error("Login API Global Error:", error);
+    console.error("Login API Error:", error);
     return NextResponse.json(
-      { error: "Internal server error", details: String(error) },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
-}
-
-export async function GET() {
-  return NextResponse.json({ message: "Auth API is running" });
 }
