@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, Loader2, Check, ChevronRight, FileText, Camera } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Check, ChevronRight, FileText, Camera, Wallet } from "lucide-react";
 import FileUpload from "@/components/FileUpload";
+import { formatCurrency } from "@/lib/utils";
 
 const STEPS = [
   { id: 1, name: "Student Info" },
@@ -17,6 +18,7 @@ export default function EmitraNewAdmissionPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState<any[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -33,6 +35,9 @@ export default function EmitraNewAdmissionPage() {
 
   useEffect(() => {
     fetch("/api/courses").then(res => res.json()).then(data => setCourses(data || []));
+    fetch("/api/me").then(res => res.json()).then(data => {
+      if (!data.error) setCurrentUser(data);
+    });
   }, []);
 
   useEffect(() => {
@@ -150,18 +155,30 @@ export default function EmitraNewAdmissionPage() {
                 <label className="form-label">Course Fee (Official)</label>
                 <input type="text" readOnly value={formData.totalFee ? `₹ ${formData.totalFee}` : "₹ 0"} className="form-input bg-gray-50 text-gray-500 font-mono" />
               </div>
-              <div className="form-group">
-                <label className="form-label">Fee Offered *</label>
-                <input 
-                  required 
-                  type="number" 
-                  name="feeOffered" 
-                  value={formData.feeOffered} 
-                  onChange={handleChange} 
-                  className="form-input font-bold text-primary-600 border-primary-200 focus:ring-primary-500" 
-                  placeholder="₹ 0.00"
-                />
-              </div>
+                <div className="flex flex-col gap-2">
+                  <label className="form-label">Fee Offered *</label>
+                  <input 
+                    required 
+                    type="number" 
+                    name="feeOffered" 
+                    value={formData.feeOffered} 
+                    onChange={handleChange} 
+                    className="form-input font-bold text-primary-600 border-primary-200 focus:ring-primary-500" 
+                    placeholder="₹ 0.00"
+                  />
+                  {formData.feeOffered && currentUser && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-100 animate-in fade-in slide-in-from-top-1 mb-2">
+                       <Wallet className="w-4 h-4 text-green-600" />
+                       <div>
+                         <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider leading-none">Your Estimated Commission</p>
+                         <p className="text-sm font-bold text-green-700 mt-0.5">
+                           {formatCurrency(Number(formData.feeOffered) * ((currentUser.commissionRate || 10) / 100))}
+                           <span className="text-[10px] ml-1 font-medium opacity-70">({currentUser.commissionRate || 10}%)</span>
+                         </p>
+                       </div>
+                    </div>
+                  )}
+                </div>
             </div>
             
             <div className="form-group">

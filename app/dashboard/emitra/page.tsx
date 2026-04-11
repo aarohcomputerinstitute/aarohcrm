@@ -81,7 +81,7 @@ export default function EmitraDashboard() {
         </div>
         <div className="flex gap-2">
             <button 
-              onClick={() => router.push("/dashboard/inquiries/add")}
+              onClick={() => router.push("/dashboard/emitra/admissions/new")}
               className="btn-primary shadow-lg shadow-primary-200 flex items-center gap-2"
             >
               <LayoutDashboard className="w-4 h-4 text-white/70" />
