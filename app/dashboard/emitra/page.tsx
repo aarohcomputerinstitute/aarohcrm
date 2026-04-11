@@ -9,7 +9,8 @@ import {
   GraduationCap,
   ArrowUpRight,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  LayoutDashboard
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
