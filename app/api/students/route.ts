@@ -129,10 +129,13 @@ export async function POST(request: NextRequest) {
       });
 
       if (referrer?.role === "EMITRA" && referrer.isActive) {
-        const totalFee = data.totalFee ? parseFloat(String(data.totalFee)) : 0;
+        const totalFeeNum = data.totalFee ? parseFloat(String(data.totalFee)) : 0;
+        const discountNum = data.discount ? parseFloat(String(data.discount)) : 0;
+        const finalFee = Math.max(0, totalFeeNum - discountNum);
+
         const commissionPercentage = referrer.commissionRate || 10;
-        const commissionAmount = totalFee > 0
-          ? Math.round(totalFee * commissionPercentage / 100)
+        const commissionAmount = finalFee > 0
+          ? Math.round(finalFee * commissionPercentage / 100)
           : 500; // Default ₹500 if no fee specified
 
         await prisma.commission.create({
