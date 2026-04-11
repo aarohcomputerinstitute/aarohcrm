@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { 
   Users, 
   Wallet, 
@@ -15,6 +16,7 @@ import {
 import { formatDate } from "@/lib/utils";
 
 export default function EmitraDashboard() {
+  const router = useRouter();
   const [stats, setStats] = useState<any>(null);
   const [recentReferrals, setRecentReferrals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,13 +80,13 @@ export default function EmitraDashboard() {
           </p>
         </div>
         <div className="flex gap-2">
-           <button 
-             onClick={() => window.location.href = "/dashboard/inquiries/add"}
-             className="btn-primary shadow-lg shadow-primary-200 flex items-center gap-2"
-           >
+            <button 
+              onClick={() => router.push("/dashboard/inquiries/add")}
+              className="btn-primary shadow-lg shadow-primary-200 flex items-center gap-2"
+            >
               <LayoutDashboard className="w-4 h-4 text-white/70" />
               New Inquiry
-           </button>
+            </button>
         </div>
       </div>
 
@@ -103,9 +105,9 @@ export default function EmitraDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* Recent Referrals */}
-        <div className="lg:col-span-2 card shadow-sm overflow-hidden border border-gray-100">
+        <div className="card shadow-sm overflow-hidden border border-gray-100">
           <div className="card-header border-b border-gray-100 p-4 bg-gray-50/50">
             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-primary-500" />
@@ -162,23 +164,6 @@ export default function EmitraDashboard() {
               </tbody>
             </table>
           </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="card p-6 shadow-sm border border-gray-100 flex flex-col justify-between bg-gradient-to-br from-white to-gray-50">
-          <div>
-            <h3 className="font-bold text-gray-900 mb-4">Add New Inquiry</h3>
-            <p className="text-sm text-gray-500 mb-6 font-medium leading-relaxed">
-              Student ki basic details yahan se submit karein. Jab Admin ise Admission mein convert karega, tab aapka commission generate hoga.
-            </p>
-          </div>
-          <button 
-            onClick={() => window.location.href = "/dashboard/emitra/admissions/new"}
-            className="w-full btn-primary py-4 shadow-lg shadow-primary-200 flex items-center justify-center gap-2 group"
-          >
-            <Users className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            Submit New Lead
-          </button>
         </div>
       </div>
     </div>
