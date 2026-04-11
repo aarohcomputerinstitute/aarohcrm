@@ -121,7 +121,7 @@ export default function InquiriesPage() {
                 inquiries.map((inq) => (
                   <tr key={inq.id}>
                     <td className="whitespace-nowrap text-xs font-mono font-bold text-gray-500">
-                      {inq.id.slice(-6).toUpperCase()}
+                      #{inq.inquiryNo}
                     </td>
                     <td className="whitespace-nowrap text-sm text-gray-500">
                       {formatDate(inq.createdAt)}

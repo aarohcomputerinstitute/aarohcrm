@@ -69,7 +69,7 @@ export default function InquiryDetailPage({ params }: { params: { id: string } }
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Inquiry Details</h1>
-            <p className="text-sm text-gray-500 mt-0.5">ID: #{inquiry.id.slice(-6).toUpperCase()}</p>
+            <p className="text-sm text-gray-500 mt-0.5 font-bold text-primary-600 tracking-wider">REF NO: #{inquiry.inquiryNo}</p>
           </div>
         </div>
 

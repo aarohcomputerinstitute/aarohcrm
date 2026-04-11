@@ -116,6 +116,7 @@ export const createFeeTransactionSchema = z.object({
   paymentMode: z.enum(["CASH", "UPI", "BANK_TRANSFER", "CHEQUE"]).optional(),
   paymentDate: z.string().optional().nullable(),
   notes: z.string().max(500).optional().nullable(),
+  offlineReceiptNo: z.string().max(100).optional().nullable(),
   nextDueDate: z.string().optional().nullable(),
 });
 

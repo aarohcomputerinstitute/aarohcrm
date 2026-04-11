@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
           amount,
           paymentMode: data.paymentMode || "CASH",
           receiptNumber,
+          offlineReceiptNo: data.offlineReceiptNo || null,
           paymentDate: data.paymentDate ? new Date(data.paymentDate) : new Date(),
           notes: data.notes || null,
         },

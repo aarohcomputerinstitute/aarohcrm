@@ -19,6 +19,7 @@ export default function StudentFeeManagePage({ params }: { params: { studentId: 
     paymentDate: new Date().toISOString().split('T')[0],
     notes: "",
     nextDueDate: "",
+    offlineReceiptNo: "",
   });
 
   const fetchStudentData = async () => {
@@ -59,6 +60,7 @@ export default function StudentFeeManagePage({ params }: { params: { studentId: 
           paymentDate: new Date().toISOString().split('T')[0],
           notes: "",
           nextDueDate: "",
+          offlineReceiptNo: "",
         });
         fetchStudentData(); // Refresh UI
       } else {
@@ -170,6 +172,9 @@ export default function StudentFeeManagePage({ params }: { params: { studentId: 
                       <div className="text-left sm:text-right">
                         <p className="text-xs text-gray-400 font-medium">Receipt No.</p>
                         <p className="text-sm font-mono font-medium text-gray-900">{tx.receiptNumber}</p>
+                        {tx.offlineReceiptNo && (
+                          <p className="text-[10px] text-primary-600 font-bold mt-0.5">Offline: {tx.offlineReceiptNo}</p>
+                        )}
                       </div>
                       <Link 
                         href={`/dashboard/fees/receipt/${tx.id}`} 
@@ -236,9 +241,15 @@ export default function StudentFeeManagePage({ params }: { params: { studentId: 
                 </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Notes/Transaction ID (Optional)</label>
-                <input type="text" value={paymentData.notes} onChange={e => setPaymentData({...paymentData, notes: e.target.value})} className="form-input" placeholder="UPI Reference or Cheque number..." />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="form-group">
+                  <label className="form-label">Notes/Transaction (Optional)</label>
+                  <input type="text" value={paymentData.notes} onChange={e => setPaymentData({...paymentData, notes: e.target.value})} className="form-input" placeholder="UPI Ref / Cheque..." />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Offline Receipt No.</label>
+                  <input type="text" value={paymentData.offlineReceiptNo} onChange={e => setPaymentData({...paymentData, offlineReceiptNo: e.target.value})} className="form-input" placeholder="Receipt Book No." />
+                </div>
               </div>
 
               <div className="form-group">

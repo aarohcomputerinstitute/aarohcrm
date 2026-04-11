@@ -105,6 +105,7 @@ model User {
 
 model Inquiry {
   id           String        @id @default(cuid())
+  inquiryNo    Int           @unique @default(autoincrement())
   name         String
   mobile       String
   email        String?
@@ -247,10 +248,11 @@ model FeeTransaction {
   id            String      @id @default(cuid())
   feeId         String
   studentId     String
-  amount        Float
-  paymentMode   PaymentMode @default(CASH)
-  receiptNumber String      @unique @default(cuid())
-  paymentDate   DateTime    @default(now())
+  amount           Float
+  paymentMode      PaymentMode @default(CASH)
+  receiptNumber    String      @unique @default(cuid())
+  offlineReceiptNo String?
+  paymentDate      DateTime    @default(now())
   notes         String?
   createdAt     DateTime    @default(now())
 

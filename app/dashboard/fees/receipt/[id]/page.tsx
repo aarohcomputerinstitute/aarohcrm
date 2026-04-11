@@ -32,6 +32,9 @@ function ReceiptContent({ data, type }: ReceiptContentProps) {
           <h2 className="text-xl font-black text-gray-900 tracking-tight">FEE RECEIPT</h2>
           <div className="text-[10px] font-bold text-gray-600 space-y-0.5">
             <p>Receipt No: <span className="text-gray-900 font-mono">{transaction.receiptNumber}</span></p>
+            {transaction.offlineReceiptNo && (
+              <p className="text-primary-600 font-black">Offline Ref: <span className="font-mono">{transaction.offlineReceiptNo}</span></p>
+            )}
             <p>Date: <span className="text-gray-900">{formatDate(transaction.paymentDate)}</span></p>
           </div>
         </div>
