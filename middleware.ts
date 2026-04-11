@@ -79,16 +79,16 @@ export async function middleware(request: NextRequest) {
   if (
     role === "EMITRA" &&
     pathname.startsWith("/dashboard/") &&
-    !pathname.startsWith("/dashboard/emitra")
+    !pathname.startsWith("/dashboard/partner")
   ) {
-    return NextResponse.redirect(new URL("/dashboard/emitra?error=unauthorized", request.url));
+    return NextResponse.redirect(new URL("/dashboard/partner?error=unauthorized", request.url));
   }
 
   // e-Mitra API check (e-Mitra only gets access to their specific APIs and student creation)
   if (
     role === "EMITRA" &&
     pathname.startsWith("/api/") &&
-    !pathname.startsWith("/api/emitra") &&
+    !pathname.startsWith("/api/partner") &&
     !pathname.startsWith("/api/students") &&
     !pathname.startsWith("/api/inquiries") &&
     !pathname.startsWith("/api/courses") &&
