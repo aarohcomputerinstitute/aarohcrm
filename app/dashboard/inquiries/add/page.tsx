@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, Loader2, User, Phone, MapPin, Calendar, BookOpen } from "lucide-react";
+import { ArrowLeft, Save, Loader2, User, Phone, MapPin, Calendar, BookOpen, Wallet } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 export default function AddInquiryPage() {
@@ -11,6 +11,7 @@ export default function AddInquiryPage() {
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -28,6 +29,9 @@ export default function AddInquiryPage() {
   useEffect(() => {
     fetch("/api/courses").then(res => res.json()).then(data => setCourses(data || []));
     fetch("/api/users").then(res => res.json()).then(data => setUsers(data || []));
+    fetch("/api/me").then(res => res.json()).then(data => {
+      if (!data.error) setCurrentUser(data);
+    });
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -193,17 +197,29 @@ export default function AddInquiryPage() {
                   ))}
                 </select>
               </div>
-              <div className="form-group">
-                <label className="form-label">Fee Offered (₹)</label>
-                <input 
-                  type="number" 
-                  name="feeOffered"
-                  value={formData.feeOffered}
-                  onChange={handleChange}
-                  className="form-input" 
-                  placeholder="e.g. 15000"
-                />
-              </div>
+                <div className="flex flex-col gap-2">
+                  <label className="form-label">Fee Offered (₹)</label>
+                  <input 
+                    type="number" 
+                    name="feeOffered"
+                    value={formData.feeOffered}
+                    onChange={handleChange}
+                    className="form-input" 
+                    placeholder="e.g. 15000"
+                  />
+                  {currentUser?.role === "EMITRA" && formData.feeOffered && (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-100 animate-in fade-in slide-in-from-top-1">
+                      <Wallet className="w-4 h-4 text-green-600" />
+                      <div>
+                        <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider leading-none">Your Estimated Commission</p>
+                        <p className="text-sm font-bold text-green-700 mt-0.5">
+                          {formatCurrency(Number(formData.feeOffered) * ((currentUser.commissionRate || 10) / 100))}
+                          <span className="text-[10px] ml-1 font-medium opacity-70">({currentUser.commissionRate || 10}%)</span>
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
             </div>
           </div>
 

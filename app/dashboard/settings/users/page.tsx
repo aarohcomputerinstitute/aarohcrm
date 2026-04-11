@@ -8,7 +8,7 @@ const ROLES = [
   { value: "COUNSELOR", label: "Counselor", color: "bg-blue-100 text-blue-700" },
   { value: "ACCOUNTANT", label: "Accountant", color: "bg-green-100 text-green-700" },
   { value: "TRAINER", label: "Trainer", color: "bg-orange-100 text-orange-700" },
-  { value: "EMITRA", label: "e-Mitra Center", color: "bg-cyan-100 text-cyan-700" },
+  { value: "EMITRA", label: "Pointed Center", color: "bg-cyan-100 text-cyan-700" },
   { value: "ADMIN", label: "Admin", color: "bg-purple-100 text-purple-700" },
 ];
 
@@ -141,7 +141,7 @@ export default function UsersManagementPage() {
 
                 <div className="flex items-center gap-3 ml-auto">
                   <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${getRoleStyle(user.role)}`}>
-                    {user.role} {user.role === "EMITRA" && `(${user.commissionRate || 10}%)`}
+                    {user.role === "EMITRA" ? "Pointed Center" : user.role} {user.role === "EMITRA" && `(${user.commissionRate || 10}%)`}
                   </span>
                   
                   {user.isActive ? (

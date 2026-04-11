@@ -117,6 +117,7 @@ export async function POST(request: NextRequest) {
         email: user.email,
         role: user.role,
         name: user.name,
+        commissionRate: user.commissionRate || (user.role === 'EMITRA' ? 10 : undefined),
       });
     } catch (sessionError) {
       console.error("Session Setting Error:", sessionError);

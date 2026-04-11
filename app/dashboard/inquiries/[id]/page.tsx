@@ -212,7 +212,7 @@ export default function InquiryDetailPage({ params }: { params: { id: string } }
                     {inquiry.referrer ? (
                       <span className="flex flex-col">
                         <span className="text-primary-700 font-bold">{inquiry.referrer.name}</span>
-                        <span className="text-[10px] text-gray-400 italic">Partner (e-Mitra)</span>
+                        <span className="text-[10px] text-gray-400 italic">Partner (Pointed Center)</span>
                       </span>
                     ) : (
                       inquiry.source.replace("_", " ")

@@ -63,7 +63,7 @@ export default function EmitraNewAdmissionPage() {
         email: formData.email || null,
         courseId: formData.courseId || null,
         feeOffered: formData.feeOffered || null,
-        notes: `e-Mitra Referral Address: ${formData.address}. ${formData.notes}`,
+        notes: `Pointed Center Referral Address: ${formData.address}. ${formData.notes}`,
         source: "OTHER", // Will be overridden as EMITRA in API based on role
       };
 

@@ -69,12 +69,21 @@ export default function EmitraDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">e-Mitra Partner Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Partner Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Welcome back! Apne inquiries aur converted admissions yahan track karein.
+            Welcome back! Apne center ki inquiries aur commissions yahan track karein.
           </p>
+        </div>
+        <div className="flex gap-2">
+           <button 
+             onClick={() => window.location.href = "/dashboard/inquiries/add"}
+             className="btn-primary shadow-lg shadow-primary-200 flex items-center gap-2"
+           >
+              <LayoutDashboard className="w-4 h-4 text-white/70" />
+              New Inquiry
+           </button>
         </div>
       </div>
 

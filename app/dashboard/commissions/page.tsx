@@ -83,7 +83,7 @@ export default function AdminCommissionsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Commission Management</h1>
-          <p className="text-sm text-gray-500 mt-1">Sabhi e-Mitra centers ke commissions track aur pay karein.</p>
+          <p className="text-sm text-gray-500 mt-1">Sabhi Pointed Centers ke commissions track aur pay karein.</p>
         </div>
       </div>
 
@@ -118,7 +118,7 @@ export default function AdminCommissionsPage() {
           <table className="w-full text-left">
             <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase">
               <tr>
-                <th className="px-6 py-4">e-Mitra Center</th>
+                <th className="px-6 py-4">Pointed Center</th>
                 <th className="px-6 py-4">Student</th>
                 <th className="px-6 py-4">Amount</th>
                 <th className="px-6 py-4">Status & Details</th>
@@ -139,7 +139,7 @@ export default function AdminCommissionsPage() {
                   </td>
                   <td className="px-6 py-4">
                     <p className="text-sm text-gray-900">{c.student?.firstName} {c.student?.lastName}</p>
-                    <p className="text-[10px] text-gray-400 uppercase">{c.student?.course?.name}</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{c.student?.course?.name}</p>
                   </td>
                   <td className="px-6 py-4">
                     <span className="font-mono font-bold text-gray-900">₹{c.amount}</span>

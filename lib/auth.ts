@@ -17,6 +17,7 @@ export interface JWTPayload {
   email: string;
   role: string;
   name: string;
+  commissionRate?: number;
 }
 
 export async function signToken(payload: JWTPayload): Promise<string> {

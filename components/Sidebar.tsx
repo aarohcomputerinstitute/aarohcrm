@@ -85,12 +85,12 @@ const navItems = [
     icon: Settings,
   },
   {
-    label: "e-Mitra Dashboard",
+    label: "Partner Dashboard",
     href: "/dashboard/emitra",
     icon: LayoutDashboard,
   },
   {
-    label: "Submit Lead",
+    label: "New Admission Lead",
     href: "/dashboard/emitra/admissions/new",
     icon: UserPlus,
   },
@@ -118,11 +118,11 @@ export default function Sidebar({ userRole }: { userRole?: string }) {
     if (["/dashboard/fees", "/dashboard/reports", "/dashboard/commissions"].includes(item.href)) {
       return userRole === "ADMIN" || userRole === "ACCOUNTANT";
     }
-    // e-Mitra can only see e-Mitra specific links
+    // Partner can only see Partner specific links
     if (userRole === "EMITRA") {
       return item.href.startsWith("/dashboard/emitra");
     }
-    // Filter out e-Mitra links for other roles
+    // Filter out Partner links for other roles
     if (item.href.startsWith("/dashboard/emitra")) {
       return false;
     }
