@@ -94,6 +94,7 @@ export default function InquiriesPage() {
           <table className="table">
             <thead>
               <tr>
+                <th>ID No.</th>
                 <th>Date</th>
                 <th>Student Details</th>
                 <th>Interested Course</th>
@@ -106,19 +107,22 @@ export default function InquiriesPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-12">
+                  <td colSpan={8} className="text-center py-12">
                     <div className="spinner text-primary-600" />
                   </td>
                 </tr>
               ) : inquiries.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-12 text-gray-500">
+                  <td colSpan={8} className="text-center py-12 text-gray-500">
                     No inquiries found matching your filters.
                   </td>
                 </tr>
               ) : (
                 inquiries.map((inq) => (
                   <tr key={inq.id}>
+                    <td className="whitespace-nowrap text-xs font-mono font-bold text-gray-500">
+                      {inq.id.slice(-6).toUpperCase()}
+                    </td>
                     <td className="whitespace-nowrap text-sm text-gray-500">
                       {formatDate(inq.createdAt)}
                     </td>
