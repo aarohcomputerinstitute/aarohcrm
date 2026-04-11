@@ -35,7 +35,12 @@ export default function AddInquiryPage() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const value = e.target.name === "email" ? e.target.value.toLowerCase() : e.target.value;
+    let value = e.target.value;
+    if (e.target.name === "mobile") {
+      value = value.replace(/\D/g, "").slice(0, 10);
+    } else if (e.target.name === "email") {
+      value = value.toLowerCase();
+    }
     setFormData({ ...formData, [e.target.name]: value });
   };
 
@@ -112,6 +117,7 @@ export default function AddInquiryPage() {
                     onChange={handleChange}
                     required
                     pattern="[0-9]{10}"
+                    maxLength={10}
                     className="form-input pl-9" 
                     placeholder="10-digit mobile number"
                   />

@@ -53,7 +53,11 @@ export default function EmitraNewAdmissionPage() {
   }, [formData.courseId, courses]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    let value = e.target.value;
+    if (e.target.name === "mobile") {
+      value = value.replace(/\D/g, "").slice(0, 10);
+    }
+    setFormData({ ...formData, [e.target.name]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,7 +132,17 @@ export default function EmitraNewAdmissionPage() {
               </div>
               <div className="form-group col-span-2">
                 <label className="form-label">Mobile Number *</label>
-                <input required type="tel" name="mobile" value={formData.mobile} onChange={handleChange} className="form-input" placeholder="10 digit mobile number" />
+                <input 
+                  required 
+                  type="tel" 
+                  name="mobile" 
+                  value={formData.mobile} 
+                  onChange={handleChange} 
+                  className="form-input" 
+                  placeholder="10 digit mobile number"
+                  maxLength={10}
+                  pattern="[0-9]{10}"
+                />
               </div>
               <div className="form-group col-span-2">
                 <label className="form-label">Email Address</label>
