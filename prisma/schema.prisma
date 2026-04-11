@@ -308,10 +308,26 @@ model Commission {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([studentId])
   @@index([status])
   @@map("commissions")
+}
+
+model Setting {
+  id             String   @id @default("global") // Single row pattern
+  instituteName  String   @default("Aaroh Institute")
+  registrationNo String?
+  phone          String?
+  email          String?
+  address        String?
+  currency       String   @default("INR")
+  timezone       String   @default("IST")
+  twoFactor      Boolean  @default(false)
+  updatedAt      DateTime @updatedAt
+
+  @@map("settings")
 }
