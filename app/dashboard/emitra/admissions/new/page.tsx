@@ -35,9 +35,12 @@ export default function EmitraNewAdmissionPage() {
 
   useEffect(() => {
     fetch("/api/courses").then(res => res.json()).then(data => setCourses(data || []));
-    fetch("/api/me").then(res => res.json()).then(data => {
-      if (!data.error) setCurrentUser(data);
-    });
+    fetch("/api/me")
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) setCurrentUser(data);
+      })
+      .catch(() => console.log("Session fetch failed"));
   }, []);
 
   useEffect(() => {
@@ -166,14 +169,16 @@ export default function EmitraNewAdmissionPage() {
                     className="form-input font-bold text-primary-600 border-primary-200 focus:ring-primary-500" 
                     placeholder="₹ 0.00"
                   />
-                  {formData.feeOffered && currentUser && (
-                    <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-100 animate-in fade-in slide-in-from-top-1 mb-2">
-                       <Wallet className="w-4 h-4 text-green-600" />
+                  {formData.feeOffered && (
+                    <div className="flex items-center gap-3 px-4 py-3 bg-green-50 rounded-xl border border-green-100 animate-in fade-in slide-in-from-top-2">
+                       <div className="p-2 bg-green-100 rounded-lg">
+                         <Wallet className="w-5 h-5 text-green-600" />
+                       </div>
                        <div>
-                         <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider leading-none">Your Estimated Commission</p>
-                         <p className="text-sm font-bold text-green-700 mt-0.5">
-                           {formatCurrency(Number(formData.feeOffered) * ((currentUser.commissionRate || 10) / 100))}
-                           <span className="text-[10px] ml-1 font-medium opacity-70">({currentUser.commissionRate || 10}%)</span>
+                         <p className="text-[10px] text-green-600 font-bold uppercase tracking-widest leading-none">Your Estimated Commission</p>
+                         <p className="text-lg font-black text-green-700 mt-1">
+                           {formatCurrency(Number(formData.feeOffered) * ((currentUser?.commissionRate || 10) / 100))}
+                           <span className="text-xs ml-1.5 font-bold opacity-60">({currentUser?.commissionRate || 10}%)</span>
                          </p>
                        </div>
                     </div>
