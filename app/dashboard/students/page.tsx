@@ -93,9 +93,17 @@ export default function StudentsPage() {
               <div className={`absolute top-0 left-0 w-full h-1.5 ${student.fee?.dueAmount > 0 ? "bg-red-500" : "bg-green-500"}`} />
               
               <div className="p-6 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full mx-auto flex items-center justify-center text-primary-700 text-2xl font-bold shadow-sm mb-4 ring-4 ring-white">
-                  {getInitials(`${student.firstName} ${student.lastName}`)}
-                </div>
+                {student.photoUrl ? (
+                  <img 
+                    src={student.photoUrl} 
+                    alt={`${student.firstName} ${student.lastName}`} 
+                    className="w-20 h-20 rounded-full mx-auto object-cover shadow-sm mb-4 ring-4 ring-white"
+                  />
+                ) : (
+                  <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full mx-auto flex items-center justify-center text-primary-700 text-2xl font-bold shadow-sm mb-4 ring-4 ring-white">
+                    {getInitials(`${student.firstName} ${student.lastName}`)}
+                  </div>
+                )}
                 
                 <h3 className="text-lg font-bold text-gray-900 leading-tight group-hover:text-primary-600 transition-colors">
                   {student.firstName} {student.lastName}
