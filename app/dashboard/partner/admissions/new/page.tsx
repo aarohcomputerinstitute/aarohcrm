@@ -86,7 +86,7 @@ export default function EmitraNewAdmissionPage() {
       });
 
       if (res.ok) {
-        router.push("/dashboard/emitra?success=true");
+        router.push("/dashboard/partner?success=true");
       } else {
         const err = await res.json();
         alert(err.error || "Referral failed. Please check details.");
@@ -102,7 +102,7 @@ export default function EmitraNewAdmissionPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-4 mb-4">
-        <Link href="/dashboard/emitra" className="p-2 hover:bg-white rounded-lg transition-colors border">
+        <Link href="/dashboard/partner" className="p-2 hover:bg-white rounded-lg transition-colors border">
           <ArrowLeft className="w-5 h-5 text-gray-500" />
         </Link>
         <div>

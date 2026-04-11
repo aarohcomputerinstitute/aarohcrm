@@ -10,7 +10,7 @@ export default function EmitraCommissionsPage() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetch("/api/emitra/commissions")
+    fetch("/api/partner/commissions")
       .then(res => res.json())
       .then(data => {
         setCommissions(data || []);

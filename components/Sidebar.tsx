@@ -86,17 +86,17 @@ const navItems = [
   },
   {
     label: "Partner Dashboard",
-    href: "/dashboard/emitra",
+    href: "/dashboard/partner",
     icon: LayoutDashboard,
   },
   {
     label: "New Admission Lead",
-    href: "/dashboard/emitra/admissions/new",
+    href: "/dashboard/partner/admissions/new",
     icon: UserPlus,
   },
   {
     label: "My Commissions",
-    href: "/dashboard/emitra/commissions",
+    href: "/dashboard/partner/commissions",
     icon: CreditCard,
   },
 ];
@@ -120,10 +120,10 @@ export default function Sidebar({ userRole }: { userRole?: string }) {
     }
     // Partner can only see Partner specific links
     if (userRole === "EMITRA") {
-      return item.href.startsWith("/dashboard/emitra");
+      return item.href.startsWith("/dashboard/partner");
     }
     // Filter out Partner links for other roles
-    if (item.href.startsWith("/dashboard/emitra")) {
+    if (item.href.startsWith("/dashboard/partner")) {
       return false;
     }
     return true; // Everyone else can see the rest

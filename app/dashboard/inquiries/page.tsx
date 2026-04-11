@@ -10,6 +10,7 @@ export default function InquiriesPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
   const [counselorFilter, setCounselorFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [counselors, setCounselors] = useState<any[]>([]);
 
   const fetchInquiries = async () => {
@@ -18,6 +19,7 @@ export default function InquiriesPage() {
       let url = `/api/inquiries?`;
       if (statusFilter) url += `status=${statusFilter}&`;
       if (counselorFilter) url += `counselorId=${counselorFilter}&`;
+      if (searchQuery) url += `search=${searchQuery}&`;
       
       const res = await fetch(url);
       const data = await res.json();
@@ -30,8 +32,11 @@ export default function InquiriesPage() {
   };
 
   useEffect(() => {
-    fetchInquiries();
-  }, [statusFilter, counselorFilter]);
+    const timer = setTimeout(() => {
+      fetchInquiries();
+    }, 500); // Debounce for 500ms
+    return () => clearTimeout(timer);
+  }, [statusFilter, counselorFilter, searchQuery]);
 
   useEffect(() => {
     fetch("/api/users").then(res => res.json()).then(data => setCounselors(data || []));
@@ -58,6 +63,8 @@ export default function InquiriesPage() {
             <input 
               type="text" 
               placeholder="Search by name or mobile..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>

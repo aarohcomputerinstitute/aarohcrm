@@ -24,7 +24,7 @@ export default function EmitraDashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const res = await fetch("/api/emitra/dashboard");
+        const res = await fetch("/api/partner/dashboard");
         const data = await res.json();
         setStats(data.stats);
         setRecentReferrals(data.recentReferrals);
@@ -81,7 +81,7 @@ export default function EmitraDashboard() {
         </div>
         <div className="flex gap-2">
             <button 
-              onClick={() => router.push("/dashboard/emitra/admissions/new")}
+              onClick={() => router.push("/dashboard/partner/admissions/new")}
               className="btn-primary shadow-lg shadow-primary-200 flex items-center gap-2"
             >
               <LayoutDashboard className="w-4 h-4 text-white/70" />

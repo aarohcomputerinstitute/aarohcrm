@@ -32,7 +32,7 @@ export default function AdminCommissionsPage() {
 
   const fetchCommissions = async () => {
     setLoading(true);
-    const res = await fetch("/api/emitra/commissions");
+    const res = await fetch("/api/partner/commissions");
     const data = await res.json();
     setCommissions(data || []);
     setLoading(false);
@@ -48,7 +48,7 @@ export default function AdminCommissionsPage() {
       body.transactionId = details.transactionId;
     }
 
-    const res = await fetch(`/api/emitra/commissions/${id}`, {
+    const res = await fetch(`/api/partner/commissions/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
