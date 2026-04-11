@@ -119,5 +119,14 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - Static asset folders (images, fonts, etc.)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|images|fonts|api/auth/login).*)",
+  ],
 };

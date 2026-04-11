@@ -10,10 +10,45 @@ export async function GET(request: NextRequest) {
   try {
     const userId = user.userId;
 
-    const [stats, recentAdmissions] = await Promise.all([
+    const [
+      aggregateStats,
+      paidStats,
+      pendingStats,
+      totalReferrals,
+      totalAdmissions,
+      recentReferrals,
+      recentAdmissions,
+    ] = await Promise.all([
       prisma.commission.aggregate({
         where: { userId },
         _sum: { amount: true },
+      }),
+      prisma.commission.aggregate({
+        where: { userId, status: "PAID" },
+        _sum: { amount: true },
+      }),
+      prisma.commission.aggregate({
+        where: { userId, status: "PENDING" },
+        _sum: { amount: true },
+      }),
+      prisma.inquiry.count({
+        where: { referredById: userId, isActive: true },
+      }),
+      prisma.student.count({
+        where: { referredById: userId, isActive: true },
+      }),
+      prisma.inquiry.findMany({
+        where: { referredById: userId, isActive: true },
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: {
+          course: { select: { name: true } },
+          student: {
+            include: {
+              commission: { select: { amount: true, status: true, percentage: true } }
+            }
+          }
+        },
       }),
       prisma.student.findMany({
         where: { referredById: userId, isActive: true },
@@ -26,45 +61,13 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    const paidCommission = await prisma.commission.aggregate({
-      where: { userId, status: "PAID" },
-      _sum: { amount: true },
-    });
-
-    const pendingCommission = await prisma.commission.aggregate({
-      where: { userId, status: "PENDING" },
-      _sum: { amount: true },
-    });
-
-    const totalReferrals = await prisma.inquiry.count({
-      where: { referredById: userId, isActive: true },
-    });
-
-    const totalAdmissions = await prisma.student.count({
-      where: { referredById: userId, isActive: true },
-    });
-
-    const recentReferrals = await prisma.inquiry.findMany({
-      where: { referredById: userId, isActive: true },
-      take: 5,
-      orderBy: { createdAt: "desc" },
-      include: {
-        course: { select: { name: true } },
-        student: {
-          include: {
-            commission: { select: { amount: true, status: true, percentage: true } }
-          }
-        }
-      },
-    });
-
     return NextResponse.json({
       stats: {
         totalReferrals,
         totalAdmissions,
-        totalCommission: stats._sum.amount || 0,
-        paidCommission: paidCommission._sum.amount || 0,
-        pendingCommission: pendingCommission._sum.amount || 0,
+        totalCommission: aggregateStats._sum.amount || 0,
+        paidCommission: paidStats._sum.amount || 0,
+        pendingCommission: pendingStats._sum.amount || 0,
       },
       recentReferrals,
       recentAdmissions,
